@@ -69,7 +69,7 @@ export async function PATCH(
             );
         }
 
-        return NextResponse.json({ task: updatedTask });
+        return NextResponse.json(updatedTask);
 
     } catch (error) {
         console.error('Failed to update task:', error);

@@ -22,3 +22,9 @@ export const updateTaskSchema = z.object({
   status: z.enum(['todo', 'in_progress', 'done']).optional(),
   dueDate: z.string().datetime().nullable().optional(),
 });
+
+
+export const createNote = z.object({
+  content: z.string().min(1, 'A content is required').max(1024),
+  pinned: z.boolean('pinned').default(false)
+});
