@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Personal Dashboard
+
+> **Note:** This project is created for **learning purposes**. It serves as a practical exercise to understand Next.js full-stack development, API routes, and database integration.
+
+## Overview
+
+A personal dashboard application built to manage daily tasks and notes. This project demonstrates a full-stack implementation using the Next.js App Router.
+
+## Features
+
+### ✅ Task Management
+- **Create Tasks**: Add new tasks with a title.
+- **Delete Tasks**: Remove completed or unwanted tasks.
+- **Status Tracking**: Tasks have a status (default: 'todo').
+
+### 📝 Note Taking
+- **Create Notes**: Quickly add text notes.
+- **Pin/Unpin**: Pin important notes to the top of the list for easy access.
+- **Delete Notes**: Remove notes when they are no longer needed.
+- **Optimistic Updates**: The UI updates immediately when pinning/unpinning for a responsive feel.
+
+## Technical Implementation
+
+This project is built with a modern stack to ensure type safety and performance:
+
+### Frontend
+- **Next.js App Router**: Uses Server Components for initial data fetching and Client Components for interactivity.
+- **Tailwind CSS**: For rapid and responsive styling.
+- **React Hooks**: `useState`, `useEffect`, and `useMemo` for managing local state and logic.
+
+### Backend
+- **Next.js API Routes**: Custom route handlers (`src/app/api/...`) manage server-side logic.
+    - `GET`: Fetch data from the database.
+    - `POST`: Create new entries (validated with Zod).
+    - `DELETE`: Remove entries.
+    - `PATCH`: Update specific fields (e.g., pinning a note).
+- **Drizzle ORM**: A lightweight TypeScript ORM for interacting with the PostgreSQL database.
+- **PostgreSQL**: The relational database used for storage.
+
+### Validation
+- **Zod**: Used to define schemas and validate incoming API requests, ensuring data integrity before it reaches the database.
 
 ## Getting Started
 
-First, run the development server:
+1.  **Install dependencies**:
+    ```bash
+    npm install
+    ```
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+2.  **Set up the database**:
+    Ensure you have a PostgreSQL database running and your `.env` file is configured.
+    ```bash
+    npm run db:migrate
+    ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+3.  **Run the development server**:
+    ```bash
+    npm run dev
+    ```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+4.  **Open the app**:
+    Visit [http://localhost:3000](http://localhost:3000).
