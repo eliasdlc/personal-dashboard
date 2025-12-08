@@ -28,3 +28,9 @@ export const createNote = z.object({
   content: z.string().min(1, 'A content is required').max(1024),
   pinned: z.boolean('pinned').default(false)
 });
+
+export const createQuickExpense = z.object({
+  label: z.string().min(1, 'A label is required').max(200),
+  amount: z.coerce.number().min(0, 'Amount must be positive'),
+  category: z.enum(['food', 'transport', 'health', 'shopping', 'other']),
+});

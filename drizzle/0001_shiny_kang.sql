@@ -1,0 +1,1 @@
+ALTER TABLE "quick_expenses" ADD COLUMN "updated_at" timestamp with time zone DEFAULT now() NOT NULL;
