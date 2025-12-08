@@ -6,6 +6,7 @@ import {
   timestamp,
   boolean,
   decimal,
+  uuid,
 } from 'drizzle-orm/pg-core';
 
 // Users
@@ -25,7 +26,7 @@ export const users = pgTable('users', {
 // Tasks
 export const tasks = pgTable('tasks', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull(),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   title: text('title').notNull(),
   description: text('description'),
   status: varchar('status', { length: 20 }).notNull().default('todo'),
@@ -37,6 +38,7 @@ export const tasks = pgTable('tasks', {
     .defaultNow()
     .notNull(),
 });
+
 
 // Notes
 export const notes = pgTable('notes', {
@@ -66,3 +68,4 @@ export const quickExpenses = pgTable('quick_expenses', {
     .defaultNow()
     .notNull(),
 });
+

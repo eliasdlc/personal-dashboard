@@ -4,20 +4,39 @@ import { desc, eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 import { createQuickExpense } from "../../../../lib/validators";
 import { randomUUID } from "crypto";
+import { auth } from "@/lib/auth";
 
-const TEMP_USER_ID = 'user_12345';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+    const session = await auth();
+    console.log('API /api/quick-expenses session:', session);
+
+    if (!session) {
+        console.log('API /api/quick-expenses Unauthorized');
+        return NextResponse.json(
+            { error: 'Unauthorized' },
+            { status: 401 }
+        );
+    }
+    const userId = (session?.user as any)?.id;
     const userQuickExpenses = await db
         .select()
         .from(quickExpenses)
-        .where(eq(quickExpenses.userId, TEMP_USER_ID))
+        .where(eq(quickExpenses.userId, userId))
         .orderBy(desc(quickExpenses.createdAt));
 
     return NextResponse.json(userQuickExpenses);
 }
 
 export async function POST(request: NextRequest) {
+    const session = await auth();
+    if (!session) {
+        return NextResponse.json(
+            { error: 'Unauthorized' },
+            { status: 401 }
+        );
+    }
+    const userId = (session?.user as any)?.id;
     try {
         const json = await request.json();
 
@@ -37,7 +56,7 @@ export async function POST(request: NextRequest) {
 
         const newQuickExpense = {
             id: randomUUID(),
-            userId: TEMP_USER_ID,
+            userId,
             label: data.label,
             amount: data.amount.toString(),
             category: data.category,

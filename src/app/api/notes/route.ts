@@ -4,20 +4,39 @@ import { desc, eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 import { createNote } from "../../../../lib/validators";
 import { randomUUID } from "crypto";
+import { auth } from "@/lib/auth";
 
-const TEMP_USER_ID = 'user_12345';
+export async function GET(request: NextRequest) {
+    const session = await auth();
+    console.log('API /api/notes session:', session);
+    console.log('API /api/notes cookies:', request.cookies.getAll());
 
-export async function GET() {
+    if (!session) {
+        console.log('API /api/notes Unauthorized');
+        return NextResponse.json(
+            { error: 'Unauthorized' },
+            { status: 401 }
+        );
+    }
+    const userId = (session?.user as any)?.id;
     const userNotes = await db
         .select()
         .from(notes)
-        .where(eq(notes.userId, TEMP_USER_ID))
+        .where(eq(notes.userId, userId))
         .orderBy(desc(notes.createdAt));
 
     return NextResponse.json(userNotes);
 }
 
 export async function POST(request: NextRequest) {
+    const session = await auth();
+    if (!session) {
+        return NextResponse.json(
+            { error: 'Unauthorized' },
+            { status: 401 }
+        );
+    }
+    const userId = (session?.user as any)?.id;
     try {
         const json = await request.json();
 
@@ -37,7 +56,7 @@ export async function POST(request: NextRequest) {
 
         const newNote = {
             id: randomUUID(),
-            userId: TEMP_USER_ID,
+            userId,
             content: data.content,
             pinned: Boolean(data.pinned),
             createdAt: new Date(),

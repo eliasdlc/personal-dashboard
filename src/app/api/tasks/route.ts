@@ -4,20 +4,39 @@ import { eq, desc } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 import { createTask } from "../../../../lib/validators";
 import { randomUUID } from "crypto";
+import { auth } from "@/lib/auth";
 
-const TEMP_USER_ID = 'user_12345';
+export async function GET(request: NextRequest) {
+    const session = await auth();
+    console.log('API /api/tasks session:', session);
 
-export async function GET() {
+    if (!session) {
+        console.log('API /api/tasks Unauthorized');
+        return NextResponse.json(
+            { error: 'Unauthorized' },
+            { status: 401 }
+        );
+    }
+    const userId = (session?.user as any)?.id;
     const userTasks = await db
         .select()
         .from(tasks)
-        .where(eq(tasks.userId, TEMP_USER_ID))
+        .where(eq(tasks.userId, userId))
         .orderBy(desc(tasks.createdAt));
 
     return NextResponse.json(userTasks);
 }
 
 export async function POST(request: NextRequest) {
+
+    const session = await auth();
+    if (!session) {
+        return NextResponse.json(
+            { error: 'Unauthorized' },
+            { status: 401 }
+        );
+    }
+    const userId = (session?.user as any)?.id;
     try {
         const json = await request.json();
 
@@ -38,7 +57,7 @@ export async function POST(request: NextRequest) {
 
         const newTask = {
             id: randomUUID(),
-            userId: TEMP_USER_ID,
+            userId,
             title: data.title,
             description: data.description || null,
             status: 'todo' as const,

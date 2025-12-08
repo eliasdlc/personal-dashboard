@@ -3,19 +3,24 @@ import { db } from "../../../../../lib/db";
 import { quickExpenses } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
 import { error } from "console";
-
-const TEMP_USER_ID = 'user_12345';
+import { auth } from "@/lib/auth";
 
 export async function DELETE(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
+    const session = await auth();
+    if (!session) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const userId = (session.user as any).id;
+
     try {
         const { id } = await params;
 
         const deleted = await db
             .delete(quickExpenses)
-            .where(and(eq(quickExpenses.id, id), eq(quickExpenses.userId, TEMP_USER_ID)))
+            .where(and(eq(quickExpenses.id, id), eq(quickExpenses.userId, userId)))
             .returning();
 
         if (!deleted.length) {
@@ -41,6 +46,12 @@ export async function PATCH(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
+    const session = await auth();
+    if (!session) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const userId = (session.user as any).id;
+
     try {
         const { id } = await params;
         const json = await request.json();
@@ -50,7 +61,7 @@ export async function PATCH(
             .set({
                 updatedAt: new Date()
             })
-            .where(and(eq(quickExpenses.id, id), eq(quickExpenses.userId, TEMP_USER_ID)))
+            .where(and(eq(quickExpenses.id, id), eq(quickExpenses.userId, userId)))
             .returning();
 
         if (!updated.length) {

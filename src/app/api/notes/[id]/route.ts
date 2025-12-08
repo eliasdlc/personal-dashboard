@@ -2,19 +2,24 @@ import { notes } from "@/db/schema";
 import { db } from "../../../../../lib/db";
 import { eq, and } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
-
-const TEMP_USER_ID = 'user_12345';
+import { auth } from "@/lib/auth";
 
 export async function DELETE(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
+    const session = await auth();
+    if (!session) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const userId = (session.user as any).id;
+
     try {
         const { id } = await params;
 
         const deleted = await db
             .delete(notes)
-            .where(and(eq(notes.id, id), eq(notes.userId, TEMP_USER_ID)))
+            .where(and(eq(notes.id, id), eq(notes.userId, userId)))
             .returning();
 
         if (!deleted.length) {
@@ -38,6 +43,12 @@ export async function PATCH(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
+    const session = await auth();
+    if (!session) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const userId = (session.user as any).id;
+
     try {
         const { id } = await params;
         const json = await request.json();
@@ -56,7 +67,7 @@ export async function PATCH(
                 pinned: json.pinned,
                 updatedAt: new Date()
             })
-            .where(and(eq(notes.id, id), eq(notes.userId, TEMP_USER_ID)))
+            .where(and(eq(notes.id, id), eq(notes.userId, userId)))
             .returning();
 
         if (!updated.length) {

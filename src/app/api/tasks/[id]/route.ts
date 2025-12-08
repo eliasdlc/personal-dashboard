@@ -4,16 +4,19 @@ import { db } from "../../../../../lib/db";
 import { tasks } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { updateTaskSchema } from "../../../../../lib/validators";
+import { auth } from "@/lib/auth";
 
-
-const TEMP_USER_ID = 'user_12345';
-
-// PATCH /api/tasks/:id
 // PATCH /api/tasks/:id
 export async function PATCH(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
+    const session = await auth();
+    if (!session) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const userId = (session.user as any).id;
+
     try {
         const { id } = await params;
         const json = await request.json();
@@ -57,7 +60,7 @@ export async function PATCH(
             .where(
                 and(
                     eq(tasks.id, id),
-                    eq(tasks.userId, TEMP_USER_ID) // SECURITY: Ensure user owns the task
+                    eq(tasks.userId, userId) // SECURITY: Ensure user owns the task
                 )
             )
             .returning();
@@ -85,6 +88,12 @@ export async function DELETE(
     _request: NextRequest,
     { params }: { params: Promise<{ id: string }> },
 ) {
+    const session = await auth();
+    if (!session) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const userId = (session.user as any).id;
+
     try {
         const { id } = await params;
 
@@ -93,7 +102,7 @@ export async function DELETE(
             .where(
                 and(
                     eq(tasks.id, id),
-                    eq(tasks.userId, TEMP_USER_ID) // SECURITY: Ensure user owns the task
+                    eq(tasks.userId, userId) // SECURITY: Ensure user owns the task
                 )
             )
             .returning();
