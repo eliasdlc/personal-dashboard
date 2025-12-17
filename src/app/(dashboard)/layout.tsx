@@ -8,7 +8,7 @@ export default function DashboardLayout({
     return (
         // Contenedor principal: ocupa toda la altura de la pantalla (h-screen)
         // y usa flexbox para poner los elementos uno al lado del otro.
-        <div className="flex h-screen bg-slate-950 overflow-hidden">
+        <div className="flex h-screen bg-slate-50 dark:bg-slate-950 overflow-hidden transition-colors">
 
             {/* 1. El Sidebar (Izquierda) */}
             <Sidebar />

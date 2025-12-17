@@ -146,23 +146,23 @@ export function NoteWidget() {
     });
 
     return (
-        <div className="flex flex-col h-full rounded-2xl border border-slate-800/60 bg-slate-950 overflow-hidden relative shadow-xl shadow-black/20 group">
-            {/* Subtle gradient background */}
-            <div className="absolute inset-0 bg-linear-to-b from-slate-900/50 to-slate-950 pointer-events-none" />
+        <div className="flex flex-col h-full rounded-2xl border border-slate-200 dark:border-slate-800/60 bg-white dark:bg-slate-950 overflow-hidden relative shadow-xl shadow-slate-200/50 dark:shadow-black/20 group transition-colors">
+            {/* Subtle gradient background - Dark Mode Only */}
+            <div className="absolute inset-0 bg-linear-to-b from-slate-900/50 to-slate-950 pointer-events-none opacity-0 dark:opacity-100 transition-opacity" />
 
-            <div className="p-5 border-b border-slate-800/60 shrink-0 bg-slate-900/40 backdrop-blur-md relative z-10">
-                <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2.5">
-                    <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400">
+            <div className="p-5 border-b border-slate-200 dark:border-slate-800/60 shrink-0 bg-slate-50/80 dark:bg-slate-900/40 backdrop-blur-md relative z-10">
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2.5">
+                    <div className="p-1.5 rounded-lg bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                         <StickyNote size={18} />
                     </div>
                     Notes
-                    <span className="text-xs font-medium px-2 py-0.5 bg-slate-800/80 text-slate-400 rounded-full border border-slate-700/50">{notes.length}</span>
+                    <span className="text-xs font-medium px-2 py-0.5 bg-slate-100 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400 rounded-full border border-slate-200 dark:border-slate-700/50">{notes.length}</span>
                 </h2>
 
                 <form onSubmit={handleSubmit} className="space-y-3">
                     <div className="relative">
                         <Textarea
-                            className="w-full rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-3 text-sm text-slate-200 placeholder:text-slate-500 outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20 resize-none transition-all"
+                            className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/50 px-4 py-3 text-sm text-slate-900 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20 resize-none transition-all"
                             placeholder="Write a quick note..."
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
@@ -173,7 +173,7 @@ export function NoteWidget() {
                                 type="submit"
                                 disabled={submitting || !content.trim()}
                                 size="sm"
-                                className="h-8 w-8 p-0 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-900/20 transition-all disabled:opacity-50 disabled:shadow-none"
+                                className="h-8 w-8 p-0 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 dark:shadow-emerald-900/20 transition-all disabled:opacity-50 disabled:shadow-none"
                             >
                                 {submitting ? <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Plus size={16} />}
                             </Button>
@@ -181,18 +181,18 @@ export function NoteWidget() {
                     </div>
                 </form>
                 {error && (
-                    <p className="mt-2 text-xs text-red-400 px-1">{error}</p>
+                    <p className="mt-2 text-xs text-red-500 dark:text-red-400 px-1">{error}</p>
                 )}
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 custom-scrollbar relative z-10">
                 {loading ? (
                     <div className="flex flex-col items-center justify-center h-full text-slate-500 gap-2">
-                        <div className="w-5 h-5 border-2 border-slate-600 border-t-transparent rounded-full animate-spin" />
+                        <div className="w-5 h-5 border-2 border-slate-400 dark:border-slate-600 border-t-transparent rounded-full animate-spin" />
                         <p className="text-sm">Loading notes...</p>
                     </div>
                 ) : sortedNotes.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-full text-slate-500 gap-2 opacity-60">
+                    <div className="flex flex-col items-center justify-center h-full text-slate-400 dark:text-slate-500 gap-2 opacity-60">
                         <PenLine size={32} strokeWidth={1.5} />
                         <p className="text-sm">No notes yet.</p>
                     </div>
@@ -202,22 +202,22 @@ export function NoteWidget() {
                             <li
                                 key={note.id}
                                 className={`group/item relative flex items-start gap-3 rounded-xl border p-4 transition-all ${note.pinned
-                                    ? 'border-yellow-500/20 bg-yellow-500/5 hover:bg-yellow-500/10'
-                                    : 'border-slate-800/50 bg-slate-900/30 hover:border-slate-700/50 hover:bg-slate-800/40'
+                                    ? 'border-yellow-500/20 bg-yellow-50 dark:bg-yellow-500/5 hover:bg-yellow-100 dark:hover:bg-yellow-500/10'
+                                    : 'border-slate-200 dark:border-slate-800/50 bg-slate-50 dark:bg-slate-900/30 hover:border-slate-300 dark:hover:border-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-800/40'
                                     }`}
                             >
-                                <div className={`mt-0.5 ${note.pinned ? 'text-yellow-500' : 'text-slate-600'}`}>
+                                <div className={`mt-0.5 ${note.pinned ? 'text-yellow-600 dark:text-yellow-500' : 'text-slate-500 dark:text-slate-600'}`}>
                                     <StickyNote size={16} />
                                 </div>
 
-                                <p className="flex-1 text-sm text-slate-300 whitespace-pre-wrap wrap-break-word leading-relaxed">{note.content}</p>
+                                <p className="flex-1 text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap wrap-break-word leading-relaxed">{note.content}</p>
 
                                 <div className="flex shrink-0 gap-1 opacity-0 transition-all group-hover/item:opacity-100">
                                     <button
                                         onClick={() => togglePin(note)}
                                         className={`p-1.5 rounded-lg transition-colors ${note.pinned
-                                            ? 'text-yellow-500 hover:bg-yellow-500/10'
-                                            : 'text-slate-500 hover:bg-slate-800 hover:text-slate-300'
+                                            ? 'text-yellow-600 dark:text-yellow-500 hover:bg-yellow-100 dark:hover:bg-yellow-500/10'
+                                            : 'text-slate-400 dark:text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-300'
                                             }`}
                                         title={note.pinned ? "Unpin note" : "Pin note"}
                                     >
@@ -225,7 +225,7 @@ export function NoteWidget() {
                                     </button>
                                     <button
                                         onClick={() => deleteNote(note.id)}
-                                        className="p-1.5 rounded-lg text-slate-500 transition-colors hover:bg-red-500/10 hover:text-red-400"
+                                        className="p-1.5 rounded-lg text-slate-400 dark:text-slate-500 transition-colors hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-500 dark:hover:text-red-400"
                                         title="Delete note"
                                     >
                                         <Trash2 size={14} />
@@ -233,7 +233,7 @@ export function NoteWidget() {
                                 </div>
                                 {/* Mobile support: always show pin if pinned */}
                                 {note.pinned && (
-                                    <div className="absolute right-3 top-3 text-yellow-500 opacity-100 group-hover/item:opacity-0 transition-opacity">
+                                    <div className="absolute right-3 top-3 text-yellow-600 dark:text-yellow-500 opacity-100 group-hover/item:opacity-0 transition-opacity">
                                         <Pin size={14} className="fill-current" />
                                     </div>
                                 )}
