@@ -1,33 +1,51 @@
 import { signIn } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
+import Image from 'next/image';
+import dashboardImage from '@/assets/images/personal_dashboard.png';
 
 export default function LoginPage() {
     return (
-        <main className="flex items-center justify-center md:h-screen">
-            <div className="relative mx-auto flex w-full max-w-[400px] flex-col space-y-2.5 p-4 md:-mt-32">
-                <div className="flex w-full items-end rounded-lg bg-slate-900 p-3 md:h-36">
-                    <div className="w-32 text-white md:w-36">
-                        <h1 className="text-2xl font-bold">Personal Dashboard</h1>
-                    </div>
-                </div>
-                <div className="flex-1 rounded-lg bg-slate-800 px-6 pb-4 pt-8">
-                    <h1 className="mb-3 text-2xl text-white">
-                        Please log in to continue.
-                    </h1>
-                    <div className="w-full">
+        <main className="flex h-screen w-screen">
+            <div className="flex flex-row p-5 w-full">
+                <div className="pr-2 p-4 flex rounded-3xl w-[40%] h-full items-center justify-center">
+                    <div className="bg-slate-950 p-4 flex flex-col rounded-3xl w-full h-full items-center justify-center">
+                        <div>
+                            <h2 className="text-2xl font-light">
+                                Welcome to your...
+                            </h2>
+                            <h2 className="text-4xl font-extrabold">
+                                Personal Dashboard 🗒️
+                            </h2>
+                        </div>
                         <form
+                            className='w-full'
                             action={async () => {
                                 'use server';
                                 await signIn('github', { redirectTo: '/' });
                             }}
                         >
-                            <Button className="mt-4 w-full bg-slate-950 text-white hover:bg-slate-900" aria-disabled={false}>
-                                Log in with GitHub <span className="ml-auto h-5 w-5 text-gray-50" />
+                            <Button className="w-full mt-4 bg-slate-900 text-white hover:bg-slate-800" aria-disabled={false}>
+                                Log in with GitHub
                             </Button>
                         </form>
+
                     </div>
                 </div>
+                <div className="pl-2 p-4 flex rounded-3xl w-[60%] h-full items-center justify-center">
+                    <div className=" bg-white border-2 border-white rounded-3xl  w-full h-full overflow-hidden relative">
+                        <Image
+                            src={dashboardImage}
+                            alt="Personal Dashboard"
+                            fill
+                            className="object-cover p-2 rounded-3xl"
+                            placeholder="blur"
+                        />
+                    </div>
+                </div>
+
             </div>
+
+
         </main>
     );
 }

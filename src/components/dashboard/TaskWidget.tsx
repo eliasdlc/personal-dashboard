@@ -4,6 +4,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useEffect, useState, useMemo } from "react";
+import { Plus, Trash2, Check, Circle, ListTodo } from "lucide-react";
 
 export type Task = {
     id: string;
@@ -134,68 +135,78 @@ export function TaskWidget() {
     }
 
     return (
-        <div className="flex flex-col h-full bg-slate-950 rounded-2xl border border-slate-800 shadow-sm overflow-hidden">
-            <div className="p-4 border-b border-slate-800 flex justify-between items-center shrink-0">
-                <h2 className="font-semibold text-slate-50">Tasks</h2>
-                <span className="text-xs font-medium px-2 py-1  items-center justify-center text-center bg-slate-800 text-slate-50 rounded-full">{tasks.length}</span>
+        <div className="flex flex-col h-full bg-slate-950 rounded-2xl border border-slate-800/60 shadow-xl shadow-black/20 overflow-hidden relative group">
+            {/* Subtle gradient background */}
+            <div className="absolute inset-0 bg-linear-to-b from-slate-900/50 to-slate-950 pointer-events-none" />
+
+            <div className="p-5 border-b border-slate-800/60 flex justify-between items-center shrink-0 bg-slate-900/40 backdrop-blur-md relative z-10">
+                <h2 className="font-bold text-lg text-white flex items-center gap-2.5">
+                    <div className="p-1.5 rounded-lg bg-blue-500/10 text-blue-400">
+                        <ListTodo size={18} />
+                    </div>
+                    Tasks
+                    <span className="text-xs font-medium px-2 py-0.5 bg-slate-800/80 text-slate-400 rounded-full border border-slate-700/50">{tasks.length}</span>
+                </h2>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar relative z-10">
                 {loading && uniqueTasks.length === 0 ? (
-                    <div className="text-center py-8 text-slate-400 text-sm">Loading...</div>
+                    <div className="flex flex-col items-center justify-center h-full text-slate-500 gap-2">
+                        <div className="w-5 h-5 border-2 border-slate-600 border-t-transparent rounded-full animate-spin" />
+                        <p className="text-sm">Loading tasks...</p>
+                    </div>
                 ) : uniqueTasks.length === 0 ? (
-                    <div className="text-center py-8 text-slate-400 text-sm">No tasks yet</div>
+                    <div className="flex flex-col items-center justify-center h-full text-slate-500 gap-2 opacity-60">
+                        <ListTodo size={32} strokeWidth={1.5} />
+                        <p className="text-sm">No tasks yet</p>
+                    </div>
                 ) : (
                     uniqueTasks.map((task) => (
-                        <div key={task.id} className="group flex items-center gap-3 p-1 rounded-4xl hover:bg-slate-800 transition-colors border border-transparent hover:border-slate-800">
-                            <Button
+                        <div key={task.id} className="group/item flex items-center gap-3 p-3 rounded-xl hover:bg-slate-800/40 transition-all border border-transparent hover:border-slate-700/50">
+                            <button
                                 onClick={() => toggleDone(task)}
-                                className={`m-1 w-8 h-8 p-0 bg-white rounded-full border-2 flex items-center justify-center transition-colors shrink-0 cursor-pointer ${task.status === 'done' ? 'bg-blue-500 border-blue-500 hover:bg-blue-600' : 'border-gray-200 bg-white hover:bg-white hover:border-blue-500'}`}
+                                className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all shrink-0 cursor-pointer ${task.status === 'done'
+                                    ? 'bg-blue-600 border-blue-600 text-white shadow-sm shadow-blue-900/20'
+                                    : 'border-slate-600 hover:border-blue-500 text-transparent'
+                                    }`}
                             >
-                                {task.status === 'done' && (
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-white">
-                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                    </svg>
-                                )}
-                            </Button>
+                                <Check size={12} strokeWidth={3} />
+                            </button>
 
-                            <div className="min-w-0 flex-1 ">
-                                <p className={`text-sm font-medium truncate  ${task.status === 'done' ? 'text-slate-400 line-through' : 'text-slate-50'}`}>{task.title}</p>
-                                {task.description && <p className="text-xs text-slate-400 mt-0.5 line-clamp-1">{task.description}</p>}
+                            <div className="min-w-0 flex-1">
+                                <p className={`text-sm font-medium truncate transition-all ${task.status === 'done' ? 'text-slate-500 line-through decoration-slate-600' : 'text-slate-200'
+                                    }`}>{task.title}</p>
+                                {task.description && <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">{task.description}</p>}
                             </div>
 
-                            <Button
+                            <button
                                 onClick={() => deleteTask(task.id)}
-                                className="m-1 w-8 h-8 p-0 rounded-full bg-red-500 border-red-500 border-2 flex items-center justify-center transition-colors shrink-0 cursor-pointer hover:bg-red-700"
+                                className="opacity-0 group-hover/item:opacity-100 p-2 rounded-lg text-slate-500 hover:bg-red-500/10 hover:text-red-400 transition-all"
+                                title="Delete task"
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3 text-white">
-                                    <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
-                                </svg>
-                            </Button>
+                                <Trash2 size={15} />
+                            </button>
                         </div>
                     ))
-
                 )}
             </div>
 
-            <form onSubmit={handleSubmit} className="p-2 bg-slate-800 border-t border-slate-800">
-                {error && <div className="text-xs text-red-500 mb-2">{error}</div>}
-                <div className="flex gap-2 justify-center items-center">
+            <form onSubmit={handleSubmit} className="p-4 bg-slate-900/40 border-t border-slate-800/60 relative z-10 backdrop-blur-sm">
+                {error && <div className="text-xs text-red-400 mb-2 px-1">{error}</div>}
+                <div className="flex gap-2 items-center">
                     <Input
                         type="text"
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
                         placeholder="Add a new task..."
-                        className="flex-1 p-0 px-4 h-10 bg-slate-700 border border-slate-800 rounded-4xl text-sm text-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                        className="flex-1 bg-slate-950/50 border-slate-800 rounded-xl text-sm text-slate-200 placeholder:text-slate-500 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all"
                     />
                     <Button
                         type="submit"
                         disabled={submitting || !title.trim()}
-                        className="p-0 w-10 h-10 bg-slate-900 text-white rounded-4xl text-sm font-medium border-2 border-slate-900 hover:bg-slate-950 hover:border-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer flex items-center justify-center"
+                        className="w-10 h-10 p-0 rounded-xl bg-blue-600 hover:bg-blue-500 text-white border-none shadow-lg shadow-blue-900/20 transition-all disabled:opacity-50 disabled:shadow-none"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-6 h-6">
-                            <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
-                        </svg>
+                        <Plus size={20} />
                     </Button>
                 </div>
             </form>

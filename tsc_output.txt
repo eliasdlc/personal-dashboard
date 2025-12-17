@@ -1,0 +1,2 @@
+.next/dev/types/validator.ts(62,39): error TS2306: File '/development/personal-projects/personal-dashboard/src/app/components/page.tsx' is not a module.
+.next/types/validator.ts(62,39): error TS2306: File '/development/personal-projects/personal-dashboard/src/app/components/page.tsx' is not a module.

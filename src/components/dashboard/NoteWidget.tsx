@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo, JSX } from "react";
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea"
+import { Pin, Trash2, Plus, StickyNote, PenLine } from "lucide-react";
 
 export type Note = {
     id: string,
@@ -145,80 +146,95 @@ export function NoteWidget() {
     });
 
     return (
-        <div className="flex flex-col h-full rounded-2xl border border-slate-800 bg-slate-950 overflow-hidden">
-            <div className="p-4 border-b border-slate-800 shrink-0">
-                <h2 className="text-lg font-semibold text-slate-50 mb-3">Notes</h2>
+        <div className="flex flex-col h-full rounded-2xl border border-slate-800/60 bg-slate-950 overflow-hidden relative shadow-xl shadow-black/20 group">
+            {/* Subtle gradient background */}
+            <div className="absolute inset-0 bg-linear-to-b from-slate-900/50 to-slate-950 pointer-events-none" />
 
-                <form onSubmit={handleSubmit} className="space-y-2">
-                    <Textarea
-                        className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-50 outline-none focus:border-sky-500 resize-none"
-                        placeholder="Quick note…"
-                        value={content}
-                        onChange={(e) => setContent(e.target.value)}
-                        rows={2}
-                    />
-                    <Button
-                        type="submit"
-                        disabled={submitting || !content.trim()}
-                        className="w-full rounded-4xl border-2 border-emerald-600 bg-emerald-600 px-3 py-2 text-sm font-medium text-white disabled:opacity-50 hover:bg-emerald-800 cursor-pointer transition-colors"
-                    >
-                        {submitting ? 'Saving…' : 'Add note'}
-                    </Button>
+            <div className="p-5 border-b border-slate-800/60 shrink-0 bg-slate-900/40 backdrop-blur-md relative z-10">
+                <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2.5">
+                    <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400">
+                        <StickyNote size={18} />
+                    </div>
+                    Notes
+                    <span className="text-xs font-medium px-2 py-0.5 bg-slate-800/80 text-slate-400 rounded-full border border-slate-700/50">{notes.length}</span>
+                </h2>
+
+                <form onSubmit={handleSubmit} className="space-y-3">
+                    <div className="relative">
+                        <Textarea
+                            className="w-full rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-3 text-sm text-slate-200 placeholder:text-slate-500 outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20 resize-none transition-all"
+                            placeholder="Write a quick note..."
+                            value={content}
+                            onChange={(e) => setContent(e.target.value)}
+                            rows={2}
+                        />
+                        <div className="absolute right-2 bottom-2">
+                            <Button
+                                type="submit"
+                                disabled={submitting || !content.trim()}
+                                size="sm"
+                                className="h-8 w-8 p-0 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-900/20 transition-all disabled:opacity-50 disabled:shadow-none"
+                            >
+                                {submitting ? <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Plus size={16} />}
+                            </Button>
+                        </div>
+                    </div>
                 </form>
                 {error && (
-                    <p className="mt-2 text-sm text-red-400">{error}</p>
+                    <p className="mt-2 text-xs text-red-400 px-1">{error}</p>
                 )}
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto p-4 custom-scrollbar relative z-10">
                 {loading ? (
-                    <p className="text-sm text-slate-400 text-center py-4">Loading notes…</p>
+                    <div className="flex flex-col items-center justify-center h-full text-slate-500 gap-2">
+                        <div className="w-5 h-5 border-2 border-slate-600 border-t-transparent rounded-full animate-spin" />
+                        <p className="text-sm">Loading notes...</p>
+                    </div>
                 ) : sortedNotes.length === 0 ? (
-                    <p className="text-sm text-slate-400 text-center py-4">No notes yet.</p>
+                    <div className="flex flex-col items-center justify-center h-full text-slate-500 gap-2 opacity-60">
+                        <PenLine size={32} strokeWidth={1.5} />
+                        <p className="text-sm">No notes yet.</p>
+                    </div>
                 ) : (
-                    <ul className="space-y-2 text-sm">
+                    <ul className="space-y-3">
                         {sortedNotes.map((note) => (
                             <li
                                 key={note.id}
-                                className={`group relative flex items-start gap-2 rounded-xl border px-3 py-2 transition-colors ${note.pinned
-                                    ? 'border-yellow-900/50 bg-yellow-950/20'
-                                    : 'border-slate-800 bg-slate-950 hover:border-slate-700'
+                                className={`group/item relative flex items-start gap-3 rounded-xl border p-4 transition-all ${note.pinned
+                                    ? 'border-yellow-500/20 bg-yellow-500/5 hover:bg-yellow-500/10'
+                                    : 'border-slate-800/50 bg-slate-900/30 hover:border-slate-700/50 hover:bg-slate-800/40'
                                     }`}
                             >
-                                <p className="flex-1 whitespace-pre-wrap wrap-break-word">{note.content}</p>
+                                <div className={`mt-0.5 ${note.pinned ? 'text-yellow-500' : 'text-slate-600'}`}>
+                                    <StickyNote size={16} />
+                                </div>
 
-                                <div className="flex shrink-0 gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                                    <Button
+                                <p className="flex-1 text-sm text-slate-300 whitespace-pre-wrap wrap-break-word leading-relaxed">{note.content}</p>
+
+                                <div className="flex shrink-0 gap-1 opacity-0 transition-all group-hover/item:opacity-100">
+                                    <button
                                         onClick={() => togglePin(note)}
-                                        className={`rounded-4xl p-1 transition-colors cursor-pointer ${note.pinned
-                                            ? 'text-yellow-500 hover:bg-yellow-950/50'
+                                        className={`p-1.5 rounded-lg transition-colors ${note.pinned
+                                            ? 'text-yellow-500 hover:bg-yellow-500/10'
                                             : 'text-slate-500 hover:bg-slate-800 hover:text-slate-300'
                                             }`}
                                         title={note.pinned ? "Unpin note" : "Pin note"}
                                     >
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <line x1="12" y1="17" x2="12" y2="22"></line>
-                                            <path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path>
-                                        </svg>
-                                    </Button>
-                                    <Button
+                                        <Pin size={14} className={note.pinned ? "fill-current" : ""} />
+                                    </button>
+                                    <button
                                         onClick={() => deleteNote(note.id)}
-                                        className="rounded-4xl p-0 text-slate-500 transition-colors hover:bg-red-950/30 hover:text-red-400 cursor-pointer"
+                                        className="p-1.5 rounded-lg text-slate-500 transition-colors hover:bg-red-500/10 hover:text-red-400"
                                         title="Delete note"
                                     >
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <path d="M18 6 6 18"></path>
-                                            <path d="m6 6 12 12"></path>
-                                        </svg>
-                                    </Button>
+                                        <Trash2 size={14} />
+                                    </button>
                                 </div>
                                 {/* Mobile support: always show pin if pinned */}
                                 {note.pinned && (
-                                    <div className="absolute right-2 top-2 text-yellow-500 opacity-100 group-hover:opacity-0">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <line x1="12" y1="17" x2="12" y2="22"></line>
-                                            <path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path>
-                                        </svg>
+                                    <div className="absolute right-3 top-3 text-yellow-500 opacity-100 group-hover/item:opacity-0 transition-opacity">
+                                        <Pin size={14} className="fill-current" />
                                     </div>
                                 )}
                             </li>
