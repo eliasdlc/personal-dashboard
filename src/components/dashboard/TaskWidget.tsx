@@ -162,7 +162,7 @@ export function TaskWidget() {
                     </div>
                 ) : (
                     uniqueTasks.map((task) => (
-                        <div key={task.id} className="group/item flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-700/50">
+                        <div key={task.id} className="group/item flex w-full items-center gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-700/50">
                             <button
                                 onClick={() => toggleDone(task)}
                                 className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all shrink-0 cursor-pointer ${task.status === 'done'
@@ -173,8 +173,8 @@ export function TaskWidget() {
                                 <Check size={12} strokeWidth={3} />
                             </button>
 
-                            <div className="min-w-0 flex-1">
-                                <p className={`text-sm font-medium truncate transition-all ${task.status === 'done' ? 'text-slate-400 dark:text-slate-500 line-through decoration-slate-400 dark:decoration-slate-600' : 'text-slate-700 dark:text-slate-200'
+                            <div className="w-0 flex-1">
+                                <p className={`text-sm font-medium break-all whitespace-normal transition-all ${task.status === 'done' ? 'text-slate-400 dark:text-slate-500 line-through decoration-slate-400 dark:decoration-slate-600' : 'text-slate-700 dark:text-slate-200'
                                     }`}>{task.title}</p>
                                 {task.description && <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 line-clamp-1">{task.description}</p>}
                             </div>
