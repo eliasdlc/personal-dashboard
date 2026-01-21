@@ -15,6 +15,20 @@
       "when": 1764008457347,
       "tag": "0001_shiny_kang",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1769002867600,
+      "tag": "0002_right_albert_cleary",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1769006949119,
+      "tag": "0003_damp_proemial_gods",
+      "breakpoints": true
     }
   ]
 }

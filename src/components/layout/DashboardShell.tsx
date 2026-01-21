@@ -1,21 +1,24 @@
 'use client';
-import { useState } from 'react';
+
 import { Menu } from 'lucide-react';
-export function DashboardShell({
+import { SidebarProvider, useSidebar } from './SidebarContext';
+
+function DashboardContent({
     children,
     sidebar,
 }: {
     children: React.ReactNode;
     sidebar: React.ReactNode;
 }) {
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const { isOpen, close, open } = useSidebar();
+
     return (
         <div className="flex h-screen bg-slate-50 dark:bg-slate-950 overflow-hidden transition-colors">
             {/* Mobile Sidebar Overlay - Closes sidebar when clicked */}
-            {isSidebarOpen && (
+            {isOpen && (
                 <div
                     className="fixed inset-0 z-40 bg-black/50 md:hidden backdrop-blur-sm"
-                    onClick={() => setIsSidebarOpen(false)}
+                    onClick={close}
                 />
             )}
             {/* Sidebar Container */}
@@ -23,7 +26,7 @@ export function DashboardShell({
                 className={`
                     fixed inset-y-0 left-0 z-50 w-72 h-full transform transition-transform duration-300 ease-in-out
                     md:relative md:translate-x-0
-                    ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+                    ${isOpen ? 'translate-x-0' : '-translate-x-full'}
                 `}
             >
                 {sidebar}
@@ -33,7 +36,7 @@ export function DashboardShell({
                 {/* Mobile Header */}
                 <div className="md:hidden p-4 border-b border-slate-200 dark:border-slate-800 flex items-center gap-4 bg-white dark:bg-slate-950">
                     <button
-                        onClick={() => setIsSidebarOpen(true)}
+                        onClick={open}
                         className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400"
                     >
                         <Menu size={24} />
@@ -46,5 +49,19 @@ export function DashboardShell({
                 </div>
             </main>
         </div>
+    );
+}
+
+export function DashboardShell({
+    children,
+    sidebar,
+}: {
+    children: React.ReactNode;
+    sidebar: React.ReactNode;
+}) {
+    return (
+        <SidebarProvider>
+            <DashboardContent sidebar={sidebar}>{children}</DashboardContent>
+        </SidebarProvider>
     );
 }
