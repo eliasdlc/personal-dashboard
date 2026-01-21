@@ -12,8 +12,13 @@ export type Task = {
     title: string;
     description: string | null;
     status: string;
+    energyLevel?: 'high_focus' | 'low_energy';
+    contextId?: string | null;
+    statusFunnel?: 'backlog' | 'weekly' | 'today';
+    dueDate?: string | Date | null;
     createdAt: string;
     updatedAt: string;
+    position?: string | number | null;
 };
 
 export function TaskWidget() {

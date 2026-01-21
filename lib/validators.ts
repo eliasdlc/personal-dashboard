@@ -14,13 +14,21 @@ export const createTask = z.object({
     .string()
     .datetime()
     .optional(),
+  energyLevel: z.enum(['high_focus', 'low_energy']).default('low_energy'),
+  contextId: z.string().optional(),
+  statusFunnel: z.enum(['backlog', 'weekly', 'today']).default('backlog'),
+  position: z.number().optional(),
 });
 
 export const updateTaskSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200).optional(),
   description: z.string().max(1000).nullable().optional(),
   status: z.enum(['todo', 'in_progress', 'done']).optional(),
+  energyLevel: z.enum(['high_focus', 'low_energy']).optional(),
+  contextId: z.string().nullable().optional(),
+  statusFunnel: z.enum(['backlog', 'weekly', 'today']).optional(),
   dueDate: z.string().datetime().nullable().optional(),
+  position: z.number().optional(),
 });
 
 

@@ -1,0 +1,1 @@
+ALTER TABLE "tasks" ADD COLUMN "position" numeric(10, 2) DEFAULT '0';

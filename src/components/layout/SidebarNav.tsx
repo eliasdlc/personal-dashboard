@@ -2,19 +2,27 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Settings, CreditCard, FileText } from 'lucide-react';
+import { LayoutDashboard, Settings, CreditCard, FileText, Zap } from 'lucide-react';
+import { useSidebar } from './SidebarContext';
+import { GamificationStats } from '../gamification/GamificationStats';
 
 export function SidebarNav() {
     const pathname = usePathname();
+    const { close } = useSidebar();
 
     const isActive = (path: string) => pathname === path;
 
     return (
         <nav className="flex-1 px-4 space-y-1 relative z-10">
+            <div className="px-2 mb-6 mt-2">
+                <GamificationStats />
+            </div>
+
             <p className="px-4 text-xs font-semibold text-slate-600 dark:text-slate-500 uppercase tracking-wider mb-2 mt-4">Menu</p>
 
             <Link
                 href="/"
+                onClick={close}
                 className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group ${isActive('/')
                     ? 'bg-blue-600/10 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-900/20 shadow-sm'
                     : 'hover:bg-slate-100 dark:hover:bg-slate-900/50 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
@@ -25,7 +33,20 @@ export function SidebarNav() {
             </Link>
 
             <Link
+                href="/energy-flow"
+                onClick={close}
+                className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group ${isActive('/energy-flow')
+                    ? 'bg-amber-600/10 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-900/20 shadow-sm'
+                    : 'hover:bg-slate-100 dark:hover:bg-slate-900/50 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                    }`}
+            >
+                <Zap size={18} className={isActive('/energy-flow') ? '' : 'group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors'} />
+                <span>Energy Flow</span>
+            </Link>
+
+            <Link
                 href="/notes"
+                onClick={close}
                 className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group ${isActive('/notes')
                     ? 'bg-emerald-600/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/20 shadow-sm'
                     : 'hover:bg-slate-100 dark:hover:bg-slate-900/50 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
@@ -37,6 +58,7 @@ export function SidebarNav() {
 
             <Link
                 href="/expenses"
+                onClick={close}
                 className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group ${isActive('/expenses')
                     ? 'bg-purple-600/10 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-900/20 shadow-sm'
                     : 'hover:bg-slate-100 dark:hover:bg-slate-900/50 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
@@ -50,6 +72,7 @@ export function SidebarNav() {
 
             <Link
                 href="/settings"
+                onClick={close}
                 className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all group ${isActive('/settings')
                     ? 'bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-300 dark:border-slate-700 shadow-sm'
                     : 'hover:bg-slate-100 dark:hover:bg-slate-900/50 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'

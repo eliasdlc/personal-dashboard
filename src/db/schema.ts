@@ -7,6 +7,7 @@ import {
   boolean,
   decimal,
   uuid,
+  integer,
 } from 'drizzle-orm/pg-core';
 
 // Users
@@ -30,6 +31,10 @@ export const tasks = pgTable('tasks', {
   title: text('title').notNull(),
   description: text('description'),
   status: varchar('status', { length: 20 }).notNull().default('todo'),
+  energyLevel: varchar('energy_level', { length: 20 }).default('low_energy'),
+  contextId: text('context_id'),
+  statusFunnel: varchar('status_funnel', { length: 20 }).default('backlog'),
+  position: decimal('position', { precision: 10, scale: 2 }).default('0'),
   dueDate: timestamp('due_date', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true })
     .defaultNow()
@@ -69,3 +74,14 @@ export const quickExpenses = pgTable('quick_expenses', {
     .notNull(),
 });
 
+
+// User Stats (Gamification)
+export const userStats = pgTable('user_stats', {
+  userId: text('user_id').primaryKey().references(() => users.id, { onDelete: 'cascade' }),
+  streak: integer('streak').default(0).notNull(),
+  xp: integer('xp').default(0).notNull(),
+  lastCompletedDate: timestamp('last_completed_date', { withTimezone: true }),
+  updatedAt: timestamp('updated_at', { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
