@@ -76,7 +76,11 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json(newTask, { status: 201 });
     } catch (error) {
-        console.error(error);
+        console.error('Error creating task:', error);
+        if (error instanceof Error) {
+            console.error('Error message:', error.message);
+            console.error('Error stack:', error.stack);
+        }
         return NextResponse.json(
             { error: 'Internal Server Error: error creating task.' },
             { status: 500 },
