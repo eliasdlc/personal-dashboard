@@ -31,8 +31,9 @@ export async function GET(request: NextRequest) {
     }
 }
 
-export async function POST(request: NextRequest) {
+import { users } from "@/db/schema"; // Add this import
 
+export async function POST(request: NextRequest) {
     const session = await auth();
     if (!session) {
         return NextResponse.json(
@@ -41,7 +42,24 @@ export async function POST(request: NextRequest) {
         );
     }
     const userId = (session?.user as any)?.id;
+    const userEmail = session?.user?.email; // Get email from session
+    const userName = session?.user?.name;   // Get name from session
+
     try {
+        // FAILSAFE: Ensure user exists in DB before creating task
+        // Since we are using manual JWT auth but enforcing FK constraints
+        const existingUser = await db.select().from(users).where(eq(users.id, userId)).then(res => res[0]);
+
+        if (!existingUser) {
+            console.log(`User ${userId} missing in DB. Re-creating...`);
+            await db.insert(users).values({
+                id: userId, // Use the ID from GitHub/Session
+                name: userName || 'Unknown User',
+                email: userEmail || `user-${userId}@placeholder.com`,
+                image: session?.user?.image,
+            }).onConflictDoNothing(); // Prevent race conditions
+        }
+
         const json = await request.json();
 
         const result = createTask.safeParse(json);
