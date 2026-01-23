@@ -18,6 +18,9 @@ export const authConfig:
     ],
     callbacks: {
         authorized({ auth, request: { nextUrl } }) {
+            // Development bypass: Always allow access in dev mode
+            if (process.env.NODE_ENV === 'development') return true;
+
             const isLoggedIn = !!auth?.user;
             const isOnDashboard = nextUrl.pathname === '/';
             // console.log('Authorized callback:', { pathname: nextUrl.pathname, isLoggedIn, isOnDashboard });
@@ -50,4 +53,22 @@ export const authConfig:
     },
 };
 
-export const { auth, handlers, signIn, signOut } = NextAuth(authConfig);
+const { auth: originalAuth, handlers, signIn, signOut } = NextAuth(authConfig);
+
+export { handlers, signIn, signOut };
+
+export const auth = async (...args: any[]) => {
+    // Mock session for development
+    if (process.env.NODE_ENV === 'development') {
+        return {
+            user: {
+                name: "Dev User",
+                email: "dev@example.com",
+                image: "", // Empty for now, or use a placeholder
+                id: "dev-user-mock-id"
+            },
+            expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+        } as any;
+    }
+    return (originalAuth as any)(...args);
+};

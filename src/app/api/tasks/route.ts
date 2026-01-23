@@ -191,6 +191,14 @@ export async function PATCH(request: NextRequest) {
                 .where(eq(userStats.userId, userId));
 
             statsUpdate = { streak: newStreak, xp: newXp, leveledUp: false }; // Simplified for now
+        } else if (dataToUpdate.status === 'todo' && currentTask.status === 'done') {
+            let stats = await db.select().from(userStats).where(eq(userStats.userId, userId)).then(res => res[0]);
+            if (stats) {
+                const newXp = Math.max(0, stats.xp - 10);
+                await db.update(userStats)
+                    .set({ xp: newXp })
+                    .where(eq(userStats.userId, userId));
+            }
         }
 
         await db.update(tasks)

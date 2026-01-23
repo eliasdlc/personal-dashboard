@@ -7,10 +7,11 @@ interface SortableTaskCardProps {
     task: Task;
     onDelete?: (id: string) => void;
     onToggle?: (task: Task) => void;
+    onEdit?: (task: Task) => void;
     className?: string;
 }
 
-export function SortableTaskCard({ task, onDelete, onToggle, className }: SortableTaskCardProps) {
+export function SortableTaskCard({ task, onDelete, onToggle, onEdit, className }: SortableTaskCardProps) {
     const {
         attributes,
         listeners,
@@ -32,6 +33,7 @@ export function SortableTaskCard({ task, onDelete, onToggle, className }: Sortab
                 task={task as any}
                 onDelete={onDelete}
                 onToggle={onToggle}
+                onEdit={onEdit}
                 className={className}
             />
         </div>

@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useState, useMemo, JSX } from "react";
-import { Button } from "../ui/button";
-import { Textarea } from "../ui/textarea"
 import { Pin, Trash2, Plus, StickyNote, PenLine } from "lucide-react";
+import { Modal } from "@/components/ui/modal";
+import { Textarea } from "@/components/ui/textarea"
+import { Button } from "../ui/button";
 
 export type Note = {
     id: string,
@@ -30,6 +31,42 @@ export function NoteWidget() {
     const [content, setContent] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    // Editing State
+    const [editingNote, setEditingNote] = useState<Note | null>(null);
+    const [editContent, setEditContent] = useState('');
+    const [isSaving, setIsSaving] = useState(false);
+
+    function openEditModal(note: Note) {
+        setEditingNote(note);
+        setEditContent(note.content);
+    }
+
+    async function handleSaveEdit() {
+        if (!editingNote || !editContent.trim()) return;
+
+        try {
+            setIsSaving(true);
+            const res = await fetch(`/api/notes/${editingNote.id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    content: editContent.trim()
+                })
+            });
+
+            if (!res.ok) throw new Error('Failed to update note');
+
+            const updatedNote = await res.json();
+            setNotes(prev => prev.map(n => n.id === editingNote.id ? { ...n, ...updatedNote } : n));
+            setEditingNote(null);
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setIsSaving(false);
+        }
+    }
+
 
     async function fetchNotes() {
         try {
@@ -210,7 +247,9 @@ export function NoteWidget() {
                                     <StickyNote size={16} />
                                 </div>
 
-                                <p className="flex-1 text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap wrap-break-word leading-relaxed">{note.content}</p>
+                                <div className="flex-1 cursor-pointer" onClick={() => openEditModal(note)}>
+                                    <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap wrap-break-word leading-relaxed">{note.content}</p>
+                                </div>
 
                                 <div className="flex shrink-0 gap-1 opacity-0 transition-all group-hover/item:opacity-100">
                                     <button
@@ -242,7 +281,44 @@ export function NoteWidget() {
                     </ul>
                 )}
             </div>
-        </div>
+
+
+            <Modal
+                isOpen={!!editingNote}
+                onClose={() => setEditingNote(null)}
+                title="Edit Note"
+            >
+                <div className="space-y-4">
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Content</label>
+                        <Textarea
+                            value={editContent}
+                            onChange={(e) => setEditContent(e.target.value)}
+                            placeholder="Note content"
+                            className="bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 resize-none min-h-[150px]"
+                        />
+                    </div>
+
+                    <div className="flex justify-end gap-2 pt-2">
+                        <Button
+                            variant="ghost"
+                            onClick={() => setEditingNote(null)}
+                            disabled={isSaving}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={handleSaveEdit}
+                            disabled={isSaving || !editContent.trim()}
+                            className="bg-emerald-600 hover:bg-emerald-500 text-white"
+                        >
+                            {isSaving ? "Saving..." : "Save Changes"}
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
+        </div >
     );
+
 }
 

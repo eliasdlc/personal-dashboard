@@ -7,7 +7,6 @@ import { DndContext, DragOverlay, useDroppable, DragEndEvent, DragStartEvent, us
 import { SortableContext, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 
 interface ExecutionViewProps {
     tasks: Task[];
@@ -16,12 +15,13 @@ interface ExecutionViewProps {
     onUpdateEnergy: (taskId: string, energy: 'high_focus' | 'low_energy') => void;
     onReorder: (tasksToUpdate: { id: string, position: number }[]) => void;
     onCleanSlate?: () => void;
+    onEdit: (task: Task) => void;
 }
 
-export function ExecutionView({ tasks, onToggle, onDelete, onUpdateEnergy, onReorder, onCleanSlate }: ExecutionViewProps) {
+export function ExecutionView({ tasks, onToggle, onDelete, onUpdateEnergy, onReorder, onCleanSlate, onEdit }: ExecutionViewProps) {
     const todayTasks = tasks.filter(t => t.statusFunnel === 'today');
-    const highFocusTasks = todayTasks.filter(t => t.energyLevel === 'high_focus');
-    const lowEnergyTasks = todayTasks.filter(t => t.energyLevel === 'low_energy');
+    const highFocusTasks = todayTasks.filter(t => t.energyLevel === 'high_focus' && t.status === 'todo');
+    const lowEnergyTasks = todayTasks.filter(t => t.energyLevel === 'low_energy' && t.status === 'todo');
     const [activeId, setActiveId] = useState<string | null>(null);
 
     // Progress Logic
@@ -103,12 +103,12 @@ export function ExecutionView({ tasks, onToggle, onDelete, onUpdateEnergy, onReo
                     {/* Progress Bar */}
                     <div className="flex flex-col gap-2">
                         <div className="flex justify-between text-xs text-slate-500 font-medium uppercase tracking-wider">
-                            <span>Daily Progress</span>
+                            <span>Daily Progress</span>``
                             <span>{Math.round(progress)}%</span>
                         </div>
                         <div className="h-2 w-full bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
                             <div
-                                className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 transition-all duration-500"
+                                className="h-full bg-linear-to-r from-emerald-500 to-emerald-400 transition-all duration-500"
                                 style={{ width: `${progress}%` }}
                             />
                         </div>
@@ -148,6 +148,7 @@ export function ExecutionView({ tasks, onToggle, onDelete, onUpdateEnergy, onReo
                         tasks={highFocusTasks}
                         onToggle={onToggle}
                         onDelete={onDelete}
+                        onEdit={onEdit}
                         icon={<Zap size={18} className="fill-current" />}
                         headerClass="border-amber-200 dark:border-amber-500/20"
                         iconClass="bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400"
@@ -168,6 +169,7 @@ export function ExecutionView({ tasks, onToggle, onDelete, onUpdateEnergy, onReo
                         tasks={lowEnergyTasks}
                         onToggle={onToggle}
                         onDelete={onDelete}
+                        onEdit={onEdit}
                         icon={<Coffee size={18} />}
                         headerClass="border-emerald-200 dark:border-emerald-500/20"
                         iconClass="bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
@@ -195,6 +197,7 @@ interface ExecutionColumnProps {
     tasks: Task[];
     onToggle: (task: Task) => void;
     onDelete: (id: string) => void;
+    onEdit: (task: Task) => void;
     icon: React.ReactNode;
     headerClass: string;
     iconClass: string;
@@ -203,7 +206,7 @@ interface ExecutionColumnProps {
     emptyText: string;
 }
 
-function ExecutionColumn({ id, title, subtitle, count, tasks, onToggle, onDelete, icon, headerClass, iconClass, badgeClass, cardClass, emptyText }: ExecutionColumnProps) {
+function ExecutionColumn({ id, title, subtitle, count, tasks, onToggle, onDelete, onEdit, icon, headerClass, iconClass, badgeClass, cardClass, emptyText }: ExecutionColumnProps) {
     const { setNodeRef } = useDroppable({ id });
 
     return (
@@ -230,6 +233,7 @@ function ExecutionColumn({ id, title, subtitle, count, tasks, onToggle, onDelete
                                 task={task}
                                 onToggle={onToggle}
                                 onDelete={onDelete}
+                                onEdit={onEdit}
                                 className={cardClass}
                             />
                         ))}

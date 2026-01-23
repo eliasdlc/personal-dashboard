@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { useEffect, useState, useMemo } from "react";
 import { Plus, Trash2, Check, Circle, ListTodo } from "lucide-react";
 
+
 export type Task = {
     id: string;
     userId: string;
@@ -40,6 +41,9 @@ export function TaskWidget() {
     const [description, setDescription] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+
+
 
     async function fetchTasks() {
         try {

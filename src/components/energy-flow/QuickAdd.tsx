@@ -73,7 +73,7 @@ export function QuickAdd({ onTaskAdded, defaultFunnel = 'backlog' }: QuickAddPro
             onSubmit={handleSubmit}
             className="relative group bg-slate-950 dark:bg-slate-950 rounded-3xl border border-slate-800/60 shadow-2xl transition-all duration-300 overflow-hidden"
         >
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-blue-500 via-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity" />
 
             <div className="p-4 sm:p-6 flex flex-col gap-3 sm:gap-4">
                 <Input
