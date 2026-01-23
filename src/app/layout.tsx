@@ -1,10 +1,22 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { ThemeProvider } from "@/components/theme-provider"
 
 export const metadata: Metadata = {
   title: 'Personal Dashboard',
   description: 'Dashboard personal con tareas, notas y gastos rápidos',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Personal Dashboard',
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: 'white' },
+    { media: '(prefers-color-scheme: dark)', color: 'black' },
+  ],
 };
 
 export default function RootLayout({
