@@ -2,21 +2,36 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Settings, CreditCard, FileText, Zap } from 'lucide-react';
+import { LayoutDashboard, Settings, CreditCard, FileText, Zap, Download } from 'lucide-react';
 import { useSidebar } from './SidebarContext';
 import { GamificationStats } from '../gamification/GamificationStats';
+import { usePWAInstall } from '@/hooks/use-pwa-install';
 
 export function SidebarNav() {
     const pathname = usePathname();
     const { close } = useSidebar();
 
     const isActive = (path: string) => pathname === path;
+    const { install, isInstallable } = usePWAInstall();
 
     return (
         <nav className="flex-1 px-4 space-y-1 relative z-10">
             <div className="px-2 mb-6 mt-2">
                 <GamificationStats />
             </div>
+
+            {isInstallable && (
+                <div className="mb-6">
+                    <p className="px-4 text-xs font-semibold text-slate-600 dark:text-slate-500 uppercase tracking-wider mb-2">App</p>
+                    <button
+                        onClick={install}
+                        className="flex w-full items-center gap-3 px-4 py-2.5 rounded-xl transition-all group hover:bg-slate-100 dark:hover:bg-slate-900/50 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 cursor-pointer"
+                    >
+                        <Download size={18} className="group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
+                        <span>Install App</span>
+                    </button>
+                </div>
+            )}
 
             <p className="px-4 text-xs font-semibold text-slate-600 dark:text-slate-500 uppercase tracking-wider mb-2 mt-4">Menu</p>
 
