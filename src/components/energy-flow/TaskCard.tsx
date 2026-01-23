@@ -4,19 +4,24 @@ import { ContextTag } from "./ContextTag";
 import { Clock, Check, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMemo } from "react";
-import { isToday, isTomorrow, isBefore } from "date-fns";
-import { CONTEXTS, ContextId } from "@/lib/contexts";
+import { isToday, isTomorrow, isBefore, format } from "date-fns";
 
 interface TaskCardProps {
-    task: Task & { energyLevel?: "high_focus" | "low_energy", contextId?: string, statusFunnel?: string, dueDate?: string | Date };
+    task: Task & {
+        energyLevel?: "high_focus" | "low_energy" | null,
+        contextId?: string | null,
+        statusFunnel?: string | null,
+        dueDate?: string | Date | null
+    };
     onToggle?: (task: Task) => void;
     onDelete?: (id: string) => void;
+    onEdit?: (task: Task) => void;
     className?: string;
     showEnergy?: boolean;
     showContext?: boolean;
 }
 
-export function TaskCard({ task, onToggle, onDelete, className, showEnergy = true, showContext = true }: TaskCardProps) {
+export function TaskCard({ task, onToggle, onDelete, onEdit, className, showEnergy = true, showContext = true }: TaskCardProps) {
     const isDone = task.status === 'done';
 
     // Urgency Logic
@@ -25,11 +30,6 @@ export function TaskCard({ task, onToggle, onDelete, className, showEnergy = tru
         const due = new Date(task.dueDate);
         return isToday(due) || isTomorrow(due) || isBefore(due, new Date()); // Today, Tomorrow, or Overdue
     }, [task.dueDate]);
-
-    // Style Logic based on User Feedback
-    // 1. Urgent takes priority (Red)
-    // 2. Then Section Color (High Focus = Amber, Zombie = Green)
-    // 3. Fallback to default
 
     let cardStyle = "bg-white dark:bg-slate-900/50 border-slate-200 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-500/30";
 
@@ -62,7 +62,7 @@ export function TaskCard({ task, onToggle, onDelete, className, showEnergy = tru
                 <Check size={12} strokeWidth={3} />
             </button>
 
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 cursor-pointer" onClick={() => onEdit?.(task)}>
                 <div className="flex items-start justify-between gap-2">
                     <p className={`text-sm font-medium wrap-break-word ${isDone ? 'text-slate-400 line-through' : 'text-slate-700 dark:text-slate-200'}`}>
                         {task.title}
@@ -91,7 +91,14 @@ export function TaskCard({ task, onToggle, onDelete, className, showEnergy = tru
                             {task.dueDate && isBefore(new Date(task.dueDate), new Date()) && !isToday(new Date(task.dueDate)) ? "Overdue" : "Urgent"}
                         </div>
                     )}
+                    {task.dueDate && (
+                        <div className="inline-flex items-center gap-1 text-[10px] font-medium text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-900/10 px-1.5 py-0.5 rounded-md border border-slate-100 dark:border-slate-500/20">
+                            {format(new Date(task.dueDate), 'dd-MM-yyyy')}
+                        </div>
+                    )}
                 </div>
+
+
             </div>
         </div>
     );

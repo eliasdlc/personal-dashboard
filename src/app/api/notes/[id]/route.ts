@@ -53,20 +53,23 @@ export async function PATCH(
         const { id } = await params;
         const json = await request.json();
 
-        // We only expect 'pinned' for now, but could be expanded
-        if (typeof json.pinned !== 'boolean') {
+        if (json.content !== undefined && typeof json.content !== 'string') {
             return NextResponse.json(
-                { error: 'Invalid data: pinned must be a boolean' },
+                { error: 'Invalid data: content must be a string' },
                 { status: 400 }
             );
         }
 
+        const updateData: { pinned?: boolean; content?: string; updatedAt: Date } = {
+            updatedAt: new Date()
+        };
+
+        if (json.pinned !== undefined) updateData.pinned = json.pinned;
+        if (json.content !== undefined) updateData.content = json.content;
+
         const updated = await db
             .update(notes)
-            .set({
-                pinned: json.pinned,
-                updatedAt: new Date()
-            })
+            .set(updateData)
             .where(and(eq(notes.id, id), eq(notes.userId, userId)))
             .returning();
 

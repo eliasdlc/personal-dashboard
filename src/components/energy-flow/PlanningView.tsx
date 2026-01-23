@@ -2,7 +2,6 @@ import { Task } from "@/components/dashboard/TaskWidget";
 import { TaskCard } from "./TaskCard";
 import { SortableTaskCard } from "./SortableTaskCard";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ArrowRight } from "lucide-react";
 import { DndContext, DragOverlay, useDroppable, DragEndEvent, DragStartEvent, useSensor, useSensors, MouseSensor, TouchSensor } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
 import { useState } from "react";
@@ -14,9 +13,10 @@ interface PlanningViewProps {
     onMoveToBacklog: (taskId: string) => void;
     onDelete: (taskId: string) => void;
     onReorder: (tasksToUpdate: { id: string, position: number }[]) => void;
+    onEdit: (task: Task) => void;
 }
 
-export function PlanningView({ tasks, onMoveToToday, onMoveToWeekly, onMoveToBacklog, onDelete, onReorder }: PlanningViewProps) {
+export function PlanningView({ tasks, onMoveToToday, onMoveToWeekly, onMoveToBacklog, onDelete, onReorder, onEdit }: PlanningViewProps) {
     const backlogTasks = tasks.filter(t => t.statusFunnel === 'backlog' || !t.statusFunnel);
     const weeklyTasks = tasks.filter(t => t.statusFunnel === 'weekly');
     const todayTasks = tasks.filter(t => t.statusFunnel === 'today');
@@ -113,6 +113,7 @@ export function PlanningView({ tasks, onMoveToToday, onMoveToWeekly, onMoveToBac
                     count={backlogTasks.length}
                     tasks={backlogTasks}
                     onDelete={onDelete}
+                    onEdit={onEdit}
                     columnClass="min-w-[280px] w-full md:w-80 bg-slate-50/50 dark:bg-slate-900/20 border-slate-200/50 dark:border-slate-800/50"
                     headerClass="text-slate-500 dark:text-slate-400"
                     badgeClass="bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
@@ -126,6 +127,7 @@ export function PlanningView({ tasks, onMoveToToday, onMoveToWeekly, onMoveToBac
                     count={weeklyTasks.length}
                     tasks={weeklyTasks}
                     onDelete={onDelete}
+                    onEdit={onEdit}
                     columnClass="min-w-[280px] w-full md:w-80 bg-purple-50/30 dark:bg-purple-900/10 border-purple-100/50 dark:border-purple-500/10"
                     headerClass="text-purple-600 dark:text-purple-400"
                     badgeClass="bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300"
@@ -138,6 +140,7 @@ export function PlanningView({ tasks, onMoveToToday, onMoveToWeekly, onMoveToBac
                     count={todayTasks.length}
                     tasks={todayTasks}
                     onDelete={onDelete}
+                    onEdit={onEdit}
                     columnClass="min-w-[280px] w-full md:w-80 shrink-0 bg-blue-50/50 dark:bg-blue-900/10 border-blue-100 dark:border-blue-500/20"
                     headerClass="text-blue-600 dark:text-blue-400"
                     badgeClass="bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300"
@@ -160,13 +163,14 @@ interface DroppableColumnProps {
     count: number;
     tasks: Task[];
     onDelete: (id: string) => void;
+    onEdit: (task: Task) => void;
     columnClass: string;
     headerClass: string;
     badgeClass: string;
     cardClass?: string;
 }
 
-function DroppableColumn({ id, title, count, tasks, onDelete, columnClass, headerClass, badgeClass, cardClass }: DroppableColumnProps) {
+function DroppableColumn({ id, title, count, tasks, onDelete, onEdit, columnClass, headerClass, badgeClass, cardClass }: DroppableColumnProps) {
     const { setNodeRef } = useDroppable({ id });
 
     return (
@@ -180,7 +184,7 @@ function DroppableColumn({ id, title, count, tasks, onDelete, columnClass, heade
                     <div className="space-y-3 pb-4 min-h-[100px]">
                         {tasks.map(task => (
                             <div key={task.id} className="relative group">
-                                <SortableTaskCard task={task} onDelete={onDelete} className={cardClass} />
+                                <SortableTaskCard task={task} onDelete={onDelete} onEdit={onEdit} className={cardClass} />
                             </div>
                         ))}
                         {tasks.length === 0 && (
