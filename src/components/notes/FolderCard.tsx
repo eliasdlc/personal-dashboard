@@ -123,7 +123,7 @@ export function FolderCard({
                 "shadow-[0_10px_25px_rgba(0,0,0,0.12)] sm:shadow-[0_20px_40px_rgba(0,0,0,0.15)]",
                 "overflow-hidden flex flex-col shrink-0 select-none group",
                 "hover:scale-[1.02] transition-transform duration-300 ease-out",
-                "cursor-pointer touch-none mx-auto",
+                "cursor-pointer md:touch-none mx-auto",
                 isOver && "scale-105 ring-4 ring-emerald-400",
                 isDragging && "opacity-50"
             )}
