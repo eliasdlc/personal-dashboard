@@ -51,6 +51,7 @@ export const notes = pgTable('notes', {
   userId: text('user_id').notNull(),
   folderId: text('folder_id'),
   content: text('content').notNull(),
+  title: text('title'),
   pinned: boolean('pinned').notNull().default(false),
   createdAt: timestamp('created_at', { withTimezone: true })
     .defaultNow()

@@ -2,7 +2,7 @@
 
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
-import { Pin, Trash2, StickyNote, Check } from "lucide-react";
+import { Pin, Trash2, Check, MoreHorizontal, Clock } from "lucide-react";
 import { Note } from "../dashboard/NoteWidget";
 import { cn } from "@/lib/utils";
 
@@ -44,6 +44,31 @@ export function NoteCard({
         }
     };
 
+    // 60-30-10 Color Palette
+    // 60% = Dark neutral base (#1C1C1E like the folder)
+    // 30% = Accent color stripe at top
+    // 10% = White text, icons
+
+    const accentColors = [
+        '#FACC15', // Yellow
+        '#3B82F6', // Blue
+        '#EC4899', // Pink
+        '#22C55E', // Green
+        '#A855F7', // Purple
+        '#F97316', // Orange
+    ];
+
+    const colorIndex = note.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % accentColors.length;
+    const accentColor = accentColors[colorIndex];
+
+    const formattedDate = new Date(note.updatedAt).toLocaleDateString('en-US', {
+        day: 'numeric',
+        month: 'short',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+    });
+
     return (
         <div
             ref={setNodeRef}
@@ -52,74 +77,107 @@ export function NoteCard({
             {...listeners}
             {...attributes}
             className={cn(
-                "group/item relative aspect-square rotate-1 hover:rotate-0 flex items-start gap-3 rounded-xl border p-4 transition-all select-none touch-manipulation",
-                note.pinned
-                    ? '-rotate-1 border-yellow-500/20 bg-yellow-50 dark:bg-yellow-500/5 hover:bg-yellow-100 dark:hover:bg-yellow-500/10'
-                    : 'border-slate-200 dark:border-slate-800/50 bg-slate-50 dark:bg-slate-900/30 hover:border-slate-300 dark:hover:border-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-800/40',
-                isDragging ? "opacity-50 rotate-3 scale-105 shadow-xl cursor-grabbing" : "cursor-grab",
-                isSelected && "ring-2 ring-emerald-500 bg-emerald-50 dark:bg-emerald-900/10 border-emerald-500 z-10",
+                "group/item relative flex flex-col w-full h-auto min-h-[180px] sm:min-h-[200px]",
+                "rounded-[20px] sm:rounded-[24px] overflow-hidden",
+                "shadow-[0_10px_30px_rgba(0,0,0,0.08)] dark:shadow-[0_10px_30px_rgba(0,0,0,0.25)] hover:shadow-[0_15px_40px_rgba(0,0,0,0.12)] dark:hover:shadow-[0_15px_40px_rgba(0,0,0,0.35)]",
+                "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/60",
+                "transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1",
+                isDragging ? "opacity-50 rotate-2 scale-105 cursor-grabbing z-50" : "cursor-grab",
+                isSelected && "ring-4 ring-emerald-500 z-40",
                 isSelecting && !isSelected && "opacity-60 hover:opacity-100"
             )}
         >
-            {/* Selection Checkbox */}
-            {isSelecting && (
+            {/* ================= ACCENT STRIPE (30%) ================= */}
+            <div
+                className="h-[4px] sm:h-[5px] w-full shrink-0"
+                style={{ backgroundColor: accentColor }}
+            />
+
+            {/* ================= HEADER ================= */}
+            <div className="px-4 sm:px-5 pt-4 sm:pt-5 pb-2 flex justify-between items-start shrink-0">
+                {/* Left: Date Badge */}
+                <div
+                    className="px-2 sm:px-2.5 py-1 rounded-full flex items-center gap-1.5"
+                    style={{ backgroundColor: `${accentColor}20` }}
+                >
+                    <Clock size={10} className="opacity-70" style={{ color: accentColor }} />
+                    <span
+                        className="font-medium text-[9px] sm:text-[10px] uppercase tracking-wide"
+                        style={{ color: accentColor }}
+                    >
+                        {formattedDate}
+                    </span>
+                </div>
+
+                {/* Right: Actions */}
+                <div className="flex items-center gap-1">
+                    {/* Selection Checkbox */}
+                    {isSelecting && (
+                        <div className={cn(
+                            "h-5 w-5 sm:h-6 sm:w-6 rounded-full border-2 flex items-center justify-center transition-all",
+                            isSelected
+                                ? "border-emerald-500 bg-emerald-500"
+                                : "border-gray-500 hover:border-gray-400 bg-transparent"
+                        )}>
+                            {isSelected && <Check size={12} className="text-white" />}
+                        </div>
+                    )}
+
+                    {/* Pin/Delete Actions */}
+                    {!isSelecting && (
+                        <div className="flex items-center gap-0.5 opacity-0 group-hover/item:opacity-100 transition-opacity">
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onPin(note);
+                                }}
+                                className={cn(
+                                    "p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-white/10 transition-colors text-slate-400 dark:text-gray-400 hover:text-slate-700 dark:hover:text-white",
+                                    note.pinned && "text-yellow-500 dark:text-yellow-400 hover:text-yellow-600 dark:hover:text-yellow-300"
+                                )}
+                                onPointerDown={(e) => e.stopPropagation()}
+                            >
+                                <Pin size={14} className={note.pinned ? "fill-current" : ""} />
+                            </button>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onDelete(note.id);
+                                }}
+                                className="p-1.5 rounded-full hover:bg-red-50 dark:hover:bg-red-500/20 text-slate-400 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                                onPointerDown={(e) => e.stopPropagation()}
+                            >
+                                <Trash2 size={14} />
+                            </button>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* ================= BODY ================= */}
+            <div className="px-4 sm:px-5 pb-4 sm:pb-5 flex flex-col flex-1">
+                {/* Title - Conditional Rendering */}
+                {note.title && (
+                    <h1 className="text-base sm:text-lg font-semibold text-slate-900 dark:text-white mb-2 leading-tight break-words line-clamp-2">
+                        {note.title}
+                    </h1>
+                )}
+
+                {/* Content */}
                 <div className={cn(
-                    "absolute top-3 right-3 z-30 h-6 w-6 rounded-full border-2 flex items-center justify-center transition-all bg-white dark:bg-slate-900",
-                    isSelected
-                        ? "border-emerald-500 bg-emerald-500 scale-110"
-                        : "border-slate-300 dark:border-slate-600 hover:border-emerald-400"
+                    "flex-1 w-full text-sm sm:text-base text-slate-600 dark:text-gray-400 font-normal whitespace-pre-wrap leading-relaxed break-words line-clamp-[6] sm:line-clamp-[8]",
+                    !note.title && "text-slate-700 dark:text-gray-300" // Slightly brighter if no title
                 )}>
-                    {isSelected && <Check size={14} className="text-white" />}
-                </div>
-            )}
-
-            <div className={`mt-0.5 ${note.pinned ? 'text-yellow-600 dark:text-yellow-500' : 'text-slate-500 dark:text-slate-600'}`}>
-                <StickyNote size={16} />
-            </div>
-
-            <div className="flex-1 overflow-hidden">
-                <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap wrap-break-word leading-relaxed line-clamp-8 pointer-events-none">
                     {note.content}
-                </p>
+                </div>
             </div>
 
-            {!isSelecting && (
-                <div className="flex shrink-0 gap-1 opacity-0 transition-all group-hover/item:opacity-100">
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onPin(note);
-                        }}
-                        className={cn(
-                            "p-1.5 rounded-lg transition-colors",
-                            note.pinned
-                                ? 'text-yellow-600 dark:text-yellow-500 hover:bg-yellow-100 dark:hover:bg-yellow-500/10'
-                                : 'text-slate-400 dark:text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-300'
-                        )}
-                        title={note.pinned ? "Unpin note" : "Pin note"}
-                        onPointerDown={(e) => e.stopPropagation()} // Prevent drag start
-                    >
-                        <Pin size={14} className={note.pinned ? "fill-current" : ""} />
-                    </button>
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onDelete(note.id);
-                        }}
-                        className="p-1.5 rounded-lg text-slate-400 dark:text-slate-500 transition-colors hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-500 dark:hover:text-red-400"
-                        title="Delete note"
-                        onPointerDown={(e) => e.stopPropagation()} // Prevent drag start
-                    >
-                        <Trash2 size={14} />
-                    </button>
-                </div>
-            )}
-
-            {/* Mobile support: always show pin if pinned */}
+            {/* Pinned Indicator */}
             {note.pinned && (
-                <div className="absolute right-3 top-3 text-yellow-600 dark:text-yellow-500 opacity-100 group-hover/item:opacity-0 transition-opacity">
-                    <Pin size={14} className="fill-current" />
-                </div>
+                <div
+                    className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 w-2 h-2 rounded-full shadow-[0_0_8px_currentColor]"
+                    style={{ backgroundColor: accentColor, color: accentColor }}
+                />
             )}
         </div>
     );

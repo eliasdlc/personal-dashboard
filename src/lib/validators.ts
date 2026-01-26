@@ -35,13 +35,14 @@ export const createNote = z.object({
   content: z.string().min(1, 'A content is required').max(1024),
   pinned: z.boolean('pinned').default(false),
   folderId: z.string().nullable().optional(),
+  title: z.string().max(200).optional(),
 });
 
 export const updateNoteSchema = z.object({
   content: z.string().min(1).max(1024).optional(),
   pinned: z.boolean().optional(),
   folderId: z.string().nullable().optional(),
-  title: z.string().optional(),
+  title: z.string().max(200).optional(),
 });
 
 export const createQuickExpense = z.object({
