@@ -79,8 +79,8 @@ export function NoteCard({
             className={cn(
                 "group/item relative flex flex-col w-full h-auto min-h-[180px] sm:min-h-[200px]",
                 "rounded-[20px] sm:rounded-[24px] overflow-hidden",
-                "shadow-[0_10px_30px_rgba(0,0,0,0.12)] hover:shadow-[0_15px_40px_rgba(0,0,0,0.18)]",
-                "bg-[#1C1C1E]", // 60% - Dark base
+                "shadow-[0_10px_30px_rgba(0,0,0,0.08)] dark:shadow-[0_10px_30px_rgba(0,0,0,0.25)] hover:shadow-[0_15px_40px_rgba(0,0,0,0.12)] dark:hover:shadow-[0_15px_40px_rgba(0,0,0,0.35)]",
+                "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/60",
                 "transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1",
                 isDragging ? "opacity-50 rotate-2 scale-105 cursor-grabbing z-50" : "cursor-grab",
                 isSelected && "ring-4 ring-emerald-500 z-40",
@@ -132,8 +132,8 @@ export function NoteCard({
                                     onPin(note);
                                 }}
                                 className={cn(
-                                    "p-1.5 rounded-full hover:bg-white/10 transition-colors text-gray-400 hover:text-white",
-                                    note.pinned && "text-yellow-400 hover:text-yellow-300"
+                                    "p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-white/10 transition-colors text-slate-400 dark:text-gray-400 hover:text-slate-700 dark:hover:text-white",
+                                    note.pinned && "text-yellow-500 dark:text-yellow-400 hover:text-yellow-600 dark:hover:text-yellow-300"
                                 )}
                                 onPointerDown={(e) => e.stopPropagation()}
                             >
@@ -144,7 +144,7 @@ export function NoteCard({
                                     e.stopPropagation();
                                     onDelete(note.id);
                                 }}
-                                className="p-1.5 rounded-full hover:bg-red-500/20 text-gray-400 hover:text-red-400 transition-colors"
+                                className="p-1.5 rounded-full hover:bg-red-50 dark:hover:bg-red-500/20 text-slate-400 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
                                 onPointerDown={(e) => e.stopPropagation()}
                             >
                                 <Trash2 size={14} />
@@ -158,15 +158,15 @@ export function NoteCard({
             <div className="px-4 sm:px-5 pb-4 sm:pb-5 flex flex-col flex-1">
                 {/* Title - Conditional Rendering */}
                 {note.title && (
-                    <h1 className="text-base sm:text-lg font-semibold text-white mb-2 leading-tight break-words line-clamp-2">
+                    <h1 className="text-base sm:text-lg font-semibold text-slate-900 dark:text-white mb-2 leading-tight break-words line-clamp-2">
                         {note.title}
                     </h1>
                 )}
 
                 {/* Content */}
                 <div className={cn(
-                    "flex-1 w-full text-sm sm:text-base text-gray-400 font-normal whitespace-pre-wrap leading-relaxed break-words line-clamp-[6] sm:line-clamp-[8]",
-                    !note.title && "text-gray-300" // Slightly brighter if no title
+                    "flex-1 w-full text-sm sm:text-base text-slate-600 dark:text-gray-400 font-normal whitespace-pre-wrap leading-relaxed break-words line-clamp-[6] sm:line-clamp-[8]",
+                    !note.title && "text-slate-700 dark:text-gray-300" // Slightly brighter if no title
                 )}>
                     {note.content}
                 </div>

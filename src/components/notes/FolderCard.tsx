@@ -172,7 +172,7 @@ export function FolderCard({
             {/* 3. The Dark Folder Pocket (Overlay) */}
             <div className="absolute bottom-0 left-0 right-0 h-[60%] z-30">
                 {/* SVG Shape for the Tab Cutout Geometry */}
-                <div className="absolute inset-0 w-full h-full text-[#1C1C1E] drop-shadow-lg">
+                <div className="absolute inset-0 w-full h-full text-slate-100 dark:text-slate-900 drop-shadow-lg">
                     <svg
                         viewBox="0 0 240 144"
                         preserveAspectRatio="none"
@@ -204,10 +204,10 @@ export function FolderCard({
                     <div className="flex justify-between items-start mt-0.5 sm:mt-1">
                         {/* Title & Subtitle */}
                         <div className="flex flex-col gap-0 sm:gap-0.5 min-w-0 flex-1 pr-2">
-                            <h2 className="text-white text-[13px] sm:text-[15px] md:text-[18px] font-medium leading-tight tracking-wide truncate">
+                            <h2 className="text-slate-900 dark:text-white text-[13px] sm:text-[15px] md:text-[18px] font-medium leading-tight tracking-wide truncate">
                                 {name}
                             </h2>
-                            <span className="text-[#8E8E93] text-[10px] sm:text-[11px] md:text-[13px] font-normal truncate">
+                            <span className="text-slate-500 dark:text-slate-400 text-[10px] sm:text-[11px] md:text-[13px] font-normal truncate">
                                 {description || "Notes & More"}
                             </span>
                         </div>
@@ -217,21 +217,21 @@ export function FolderCard({
                             <Popover>
                                 <PopoverTrigger asChild>
                                     <button
-                                        className="text-[#8E8E93] hover:text-white transition-colors p-1"
+                                        className="text-slate-400 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors p-1"
                                         onClick={(e) => e.stopPropagation()}
                                     >
                                         <MoreHorizontal size={16} className="sm:w-[18px] sm:h-[18px] md:w-[20px] md:h-[20px]" />
                                     </button>
                                 </PopoverTrigger>
-                                <PopoverContent className="w-32 sm:w-36 p-1 bg-[#2c2c2e] border-[#3a3a3c]" align="end">
+                                <PopoverContent className="w-32 sm:w-36 p-1 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700" align="end">
                                     <div className="flex flex-col">
                                         <Button
                                             variant="ghost"
                                             size="sm"
-                                            className="justify-start h-7 sm:h-8 px-2 w-full font-normal text-white hover:bg-white/10 text-xs sm:text-sm"
+                                            className="justify-start h-7 sm:h-8 px-2 w-full font-normal text-slate-700 dark:text-white hover:bg-slate-100 dark:hover:bg-white/10 text-xs sm:text-sm"
                                             onClick={(e) => { e.stopPropagation(); onEdit?.(); }}
                                         >
-                                            <Edit size={12} className="mr-2 text-gray-400 sm:w-[14px] sm:h-[14px]" /> Edit
+                                            <Edit size={12} className="mr-2 text-slate-400 dark:text-gray-400 sm:w-[14px] sm:h-[14px]" /> Edit
                                         </Button>
                                         <Button
                                             variant="ghost"
@@ -248,9 +248,9 @@ export function FolderCard({
                     </div>
 
                     {/* Footer Area */}
-                    <div className="flex items-center gap-1.5 sm:gap-2 text-[#8E8E93] group-hover:text-white transition-colors duration-300">
+                    <div className="flex items-center gap-1.5 sm:gap-2 text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-white transition-colors duration-300">
                         <FileText size={12} strokeWidth={2.5} className="sm:w-[14px] sm:h-[14px]" />
-                        <span className="text-[10px] sm:text-[11px] md:text-[12px] font-medium tracking-wide text-white/90">
+                        <span className="text-[10px] sm:text-[11px] md:text-[12px] font-medium tracking-wide text-slate-700 dark:text-white/90">
                             {noteCount.toLocaleString()} Files
                         </span>
                     </div>

@@ -602,9 +602,9 @@ export function NoteWidget() {
                                         {currentFolderId ? "Subfolders" : "Folders"}
                                     </h3>
                                     <SortableContext items={folders.filter(f => f.parentId === currentFolderId).map(f => f.id)} strategy={rectSortingStrategy}>
-                                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
+                                        <div className="flex gap-4 overflow-x-auto pb-4 -mx-1 px-1 custom-scrollbar">
                                             {folders.filter(f => f.parentId === currentFolderId).map(folder => (
-                                                <div key={folder.id} className="w-full flex justify-center">
+                                                <div key={folder.id} className="shrink-0">
                                                     <FolderCard
                                                         id={folder.id}
                                                         name={folder.name}
