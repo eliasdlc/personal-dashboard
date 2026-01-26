@@ -6,8 +6,8 @@ import {
   timestamp,
   boolean,
   decimal,
-  uuid,
   integer,
+  foreignKey,
 } from 'drizzle-orm/pg-core';
 
 // Users
@@ -49,6 +49,7 @@ export const tasks = pgTable('tasks', {
 export const notes = pgTable('notes', {
   id: text('id').primaryKey(),
   userId: text('user_id').notNull(),
+  folderId: text('folder_id'),
   content: text('content').notNull(),
   pinned: boolean('pinned').notNull().default(false),
   createdAt: timestamp('created_at', { withTimezone: true })
@@ -85,3 +86,24 @@ export const userStats = pgTable('user_stats', {
     .defaultNow()
     .notNull(),
 });
+
+// Folders
+export const folders = pgTable('folders', {
+  id: text('id').primaryKey(),
+  userId: text('user_id').notNull(),
+  name: text('name').notNull(),
+  description: varchar('description', { length: 127 }),
+  parentId: text('parent_id'),
+  color: varchar('color', { length: 20 }),
+  createdAt: timestamp('created_at', { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+}, (table) => ({
+  parentFolderFk: foreignKey({
+    columns: [table.parentId],
+    foreignColumns: [table.id],
+  }).onDelete('cascade'),
+}));
