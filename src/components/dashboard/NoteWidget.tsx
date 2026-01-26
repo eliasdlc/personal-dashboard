@@ -20,6 +20,7 @@ export type Note = {
     content: string,
     pinned: boolean,
     folderId?: string | null,
+    title?: string,
     createdAt: string,
     updatedAt: string
 };
@@ -79,6 +80,7 @@ export function NoteWidget() {
     }, [notes, currentFolderId]);
 
     const [loading, setLoading] = useState(true);
+    const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -86,6 +88,7 @@ export function NoteWidget() {
     // Editing State
     const [editingNote, setEditingNote] = useState<Note | null>(null);
     const [editContent, setEditContent] = useState('');
+    const [editTitle, setEditTitle] = useState('');
     const [isSaving, setIsSaving] = useState(false);
 
     // Folder State
@@ -93,6 +96,7 @@ export function NoteWidget() {
 
     function openEditModal(note: Note) {
         setEditingNote(note);
+        setEditTitle(note.title || '');
         setEditContent(note.content);
     }
 
@@ -105,6 +109,7 @@ export function NoteWidget() {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
+                    title: editTitle.trim(),
                     content: editContent.trim()
                 })
             });
@@ -170,10 +175,16 @@ export function NoteWidget() {
             setSubmitting(true);
             setError(null);
 
+            // Auto-generate title if empty -> REMOVED per user request
+            // let finalTitle = title.trim();
+            // if (!finalTitle) { ... }
+            const finalTitle = title.trim();
+
             const res = await fetch('/api/notes', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
+                    title: finalTitle,
                     content: content.trim(),
                     folderId: currentFolderId // Create note in current folder
                 }),
@@ -191,6 +202,7 @@ export function NoteWidget() {
             }
 
             setNotes((prev) => [newNote, ...prev]);
+            setTitle('');
             setContent('');
 
         } catch (err: any) {
@@ -477,34 +489,43 @@ export function NoteWidget() {
                                 <FolderPlus size={16} />
                                 <span className="hidden sm:inline">{currentFolderId ? "New Subfolder" : "New Folder"}</span>
                             </Button>
+
+                            {currentFolderId && currentFolder && (
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-8 w-8 p-0 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                                        >
+                                            <MoreVertical size={18} />
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent align="end" className="w-40 p-1">
+                                        <div className="flex flex-col gap-1">
+                                            <Button variant="ghost" size="sm" className="justify-start gap-2 font-normal" onClick={() => handleEditFolder(currentFolder)}>
+                                                <Edit size={14} /> Edit
+                                            </Button>
+                                            <Button variant="ghost" size="sm" className="justify-start gap-2 font-normal text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20" onClick={() => handleDeleteFolder(currentFolder.id)}>
+                                                <Trash2 size={14} /> Delete
+                                            </Button>
+                                        </div>
+                                    </PopoverContent>
+                                </Popover>
+                            )}
                         </div>
-                        {currentFolderId && currentFolder && (
-                            <Popover>
-                                <PopoverTrigger asChild>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="h-8 w-8 p-0 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
-                                    >
-                                        <MoreVertical size={18} />
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent align="end" className="w-40 p-1">
-                                    <div className="flex flex-col gap-1">
-                                        <Button variant="ghost" size="sm" className="justify-start gap-2 font-normal" onClick={() => handleEditFolder(currentFolder)}>
-                                            <Edit size={14} /> Edit
-                                        </Button>
-                                        <Button variant="ghost" size="sm" className="justify-start gap-2 font-normal text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20" onClick={() => handleDeleteFolder(currentFolder.id)}>
-                                            <Trash2 size={14} /> Delete
-                                        </Button>
-                                    </div>
-                                </PopoverContent>
-                            </Popover>
-                        )}
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-3">
-                        <div className="relative">
+                        <div className="relative space-y-2">
+                            {(isFolderModalOpen || isSelecting || content.length > 0 || title.length > 0) && (
+                                <input
+                                    className="w-full bg-transparent text-sm font-semibold text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none px-1"
+                                    placeholder="Title (optional)"
+                                    value={title}
+                                    onChange={(e) => setTitle(e.target.value)}
+                                />
+                            )}
                             <Textarea
                                 className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/50 px-4 py-3 text-sm text-slate-900 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20 resize-none transition-all"
                                 placeholder={currentFolder ? `Add a note to ${currentFolder.name}...` : "Write a quick note..."}
@@ -638,6 +659,15 @@ export function NoteWidget() {
                     title="Edit Note"
                 >
                     <div className="space-y-4">
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Title</label>
+                            <input
+                                value={editTitle}
+                                onChange={(e) => setEditTitle(e.target.value)}
+                                placeholder="Note title"
+                                className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                            />
+                        </div>
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Content</label>
                             <Textarea

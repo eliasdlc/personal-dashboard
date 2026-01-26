@@ -15,6 +15,13 @@
       "when": 1769353330196,
       "tag": "0001_blue_riptide",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1769446782452,
+      "tag": "0002_luxuriant_jimmy_woo",
+      "breakpoints": true
     }
   ]
 }

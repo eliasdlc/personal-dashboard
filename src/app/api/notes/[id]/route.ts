@@ -6,6 +6,7 @@ import { auth } from "@/lib/auth";
 import { z } from "zod";
 
 const updateNoteSchema = z.object({
+    title: z.string().max(255).optional(), // Added title
     content: z.string().min(1, 'A content is required').max(1024).optional(),
     pinned: z.boolean('pinned').default(false).optional(),
     folderId: z.string().nullable().optional(),
@@ -75,9 +76,10 @@ export async function PATCH(
                 { status: 400 }
             );
         }
-        const { content, pinned, folderId } = result.data;
+        const { title, content, pinned, folderId } = result.data;
 
         const updateData: {
+            title?: string;
             content?: string;
             pinned?: boolean;
             folderId?: string | null;
@@ -86,6 +88,7 @@ export async function PATCH(
             updatedAt: new Date(),
         };
 
+        if (title !== undefined) updateData.title = title;
         if (content !== undefined) updateData.content = content;
         if (pinned !== undefined) updateData.pinned = Boolean(pinned);
         if (folderId !== undefined) updateData.folderId = folderId || null;
@@ -93,7 +96,7 @@ export async function PATCH(
         const updated = await db.update(notes)
             .set(updateData)
             .where(and(eq(notes.id, id), eq(notes.userId, userId)))
-            .returning({ id: notes.id });
+            .returning(); // Return all fields
 
         if (!updated.length) {
             return NextResponse.json(

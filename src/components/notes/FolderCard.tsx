@@ -1,4 +1,4 @@
-import { Settings, MoreVertical, FolderOpen, Edit, Trash2 } from "lucide-react";
+import { MoreHorizontal, FileText, Edit, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { useDroppable } from "@dnd-kit/core";
@@ -17,6 +17,38 @@ interface FolderCardProps {
     onDelete?: () => void;
     color?: string | null;
 }
+
+// Reusable Paper Component with Skeleton Lines and Hover Animation
+const PaperSheet = ({
+    baseClasses,
+    hoverClasses,
+    isHovered,
+    delay
+}: {
+    baseClasses: string;
+    hoverClasses: string;
+    isHovered: boolean;
+    delay: string;
+}) => {
+    return (
+        <div
+            className={cn(
+                "absolute top-0 bg-white rounded-[6px] shadow-sm flex flex-col p-2 sm:p-3 gap-1.5 sm:gap-2 transition-all duration-500 ease-out",
+                delay,
+                isHovered ? hoverClasses : baseClasses
+            )}
+            style={{
+                boxShadow: '0 2px 6px rgba(0,0,0,0.06)'
+            }}
+        >
+            {/* Skeleton Lines */}
+            <div className="w-[60%] h-[4px] sm:h-[6px] bg-[#E5E5E5] rounded-full" />
+            <div className="w-[85%] h-[4px] sm:h-[6px] bg-[#E5E5E5] rounded-full" />
+            <div className="w-[85%] h-[4px] sm:h-[6px] bg-[#E5E5E5] rounded-full" />
+            <div className="w-[40%] h-[4px] sm:h-[6px] bg-[#E5E5E5] rounded-full mt-0.5 sm:mt-1" />
+        </div>
+    );
+};
 
 export function FolderCard({
     id,
@@ -54,13 +86,23 @@ export function FolderCard({
         setDroppableRef(node);
     };
 
-    // Color base
-    const baseColor = color || "#6366f1"; // Default Indigo
+    // Generate gradient from color prop
+    const baseColor = color || "#3B82F6";
 
-    // Logic for rendering paper stack
-    const showFirstPaper = noteCount > 0;
-    const showSecondPaper = noteCount > 5;
-    const showThirdPaper = noteCount > 10;
+    // Create a darker shade for the gradient end
+    const darkenColor = (hex: string, percent: number): string => {
+        const num = parseInt(hex.replace('#', ''), 16);
+        const amt = Math.round(2.55 * percent);
+        const R = Math.max((num >> 16) - amt, 0);
+        const G = Math.max((num >> 8 & 0x00FF) - amt, 0);
+        const B = Math.max((num & 0x0000FF) - amt, 0);
+        return `#${(1 << 24 | R << 16 | G << 8 | B).toString(16).slice(1)}`;
+    };
+
+    const gradientStart = baseColor;
+    const gradientEnd = darkenColor(baseColor, 30);
+
+    const showPapers = noteCount > 0;
 
     const style = {
         transform: CSS.Transform.toString(transform),
@@ -75,150 +117,150 @@ export function FolderCard({
             {...attributes}
             {...listeners}
             className={cn(
-                "relative w-full aspect-square max-w-[240px] cursor-pointer group transition-transform duration-300 hover:-translate-y-1 mx-auto touch-none",
-                isOver && "scale-105",
+                // Mobile: smaller size | Desktop: original 240px
+                "relative w-[160px] h-[160px] sm:w-[200px] sm:h-[200px] md:w-[240px] md:h-[240px]",
+                "rounded-[20px] sm:rounded-[28px] md:rounded-[32px]",
+                "shadow-[0_10px_25px_rgba(0,0,0,0.12)] sm:shadow-[0_20px_40px_rgba(0,0,0,0.15)]",
+                "overflow-hidden flex flex-col shrink-0 select-none group",
+                "hover:scale-[1.02] transition-transform duration-300 ease-out",
+                "cursor-pointer touch-none mx-auto",
+                isOver && "scale-105 ring-4 ring-emerald-400",
                 isDragging && "opacity-50"
             )}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
             onClick={onClick}
         >
-            {/* Folder Tab Wrapper - Moves with BackPlate */}
+            {/* 1. Background Gradient with Inner Highlight */}
             <div
-                className="absolute top-0 left-0 w-full h-full z-[-1] transition-all duration-300 ease-out"
+                className="absolute inset-0"
                 style={{
-                    transform: isHovered && !isDragging ? 'rotate(-1deg) scale(1.01)' : 'rotate(0deg)',
+                    background: `linear-gradient(135deg, ${gradientStart} 0%, ${gradientEnd} 100%)`
                 }}
             >
-                <div
-                    className="absolute -top-3 left-0 w-28 h-8 rounded-t-2xl transition-colors duration-300"
-                    style={{
-                        backgroundColor: baseColor,
-                        boxShadow: isHovered && !isDragging
-                            ? `0 20px 25px -5px ${baseColor}40, 0 8px 10px -6px ${baseColor}20`
-                            : 'none'
-                    }}
-                />
+                {/* Subtle inner top highlight to mimic plastic/glass */}
+                <div className="absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-white/20 to-transparent pointer-events-none" />
             </div>
 
-            {/* Back Plate */}
-            <div
-                className="absolute top-0 left-0 w-full h-full rounded-2xl z-0 transition-all duration-300 ease-out"
-                style={{
-                    backgroundColor: baseColor,
-                    transform: isHovered && !isDragging ? 'rotate(-1deg) scale(1.01)' : 'rotate(0deg)',
-                    boxShadow: isHovered && !isDragging
-                        ? `0 20px 25px -5px ${baseColor}40, 0 8px 10px -6px ${baseColor}20`
-                        : 'none'
-                }}
-            />
-
-            {/* Papers inside - Responsive Stack */}
-            {showFirstPaper && (
-                <div
-                    className={cn(
-                        "absolute left-1/2 -translate-x-1/2 top-5 w-[90%] h-[90%] bg-white dark:bg-slate-200 rounded-xl transition-all duration-500 ease-out shadow-sm border border-black/5",
-                        (isHovered && !isDragging) ? '-translate-y-6 rotate-2' : '-translate-y-2'
-                    )}
-                />
-            )}
-            {showSecondPaper && (
-                <div
-                    className={cn(
-                        "absolute left-1/2 -translate-x-1/2 top-5 w-[90%] h-[90%] bg-white dark:bg-slate-200/90 rounded-xl transition-all duration-500 ease-out shadow-sm border border-black/5",
-                        (isHovered && !isDragging) ? '-translate-y-4 -rotate-1' : '-translate-y-1.5'
-                    )}
-                />
-            )}
-            {showThirdPaper && (
-                <div
-                    className={cn(
-                        "absolute left-1/2 -translate-x-1/2 top-5 w-[90%] h-[90%] bg-white dark:bg-slate-200/80 rounded-xl transition-all duration-500 ease-out shadow-sm border border-black/5",
-                        (isHovered && !isDragging) ? '-translate-y-2 rotate-1' : '-translate-y-1'
-                    )}
-                />
+            {/* 2. Paper Elements - Animated on Hover */}
+            {showPapers && (
+                <div className="absolute top-[20px] sm:top-[25px] md:top-[30px] left-0 right-0 px-4 sm:px-5 md:px-6 flex flex-col items-center">
+                    {/* Back Sheet - Fans left on hover */}
+                    <PaperSheet
+                        isHovered={isHovered}
+                        delay="delay-0"
+                        baseClasses="w-[100px] sm:w-[130px] md:w-[160px] h-[60px] sm:h-[80px] md:h-[100px] opacity-60 translate-y-0 scale-[0.85] z-0 rotate-0"
+                        hoverClasses="w-[100px] sm:w-[130px] md:w-[160px] h-[60px] sm:h-[80px] md:h-[100px] opacity-70 -translate-y-2 sm:-translate-y-3 md:-translate-y-4 scale-[0.85] z-0 -rotate-6 -translate-x-2"
+                    />
+                    {/* Middle Sheet - Lifts up on hover */}
+                    <PaperSheet
+                        isHovered={isHovered}
+                        delay="delay-75"
+                        baseClasses="w-[110px] sm:w-[140px] md:w-[170px] h-[70px] sm:h-[90px] md:h-[110px] opacity-80 translate-y-[6px] sm:translate-y-[7px] md:translate-y-[8px] scale-[0.92] z-10 rotate-0"
+                        hoverClasses="w-[110px] sm:w-[140px] md:w-[170px] h-[70px] sm:h-[90px] md:h-[110px] opacity-90 -translate-y-1 sm:-translate-y-2 md:-translate-y-3 scale-[0.95] z-10 rotate-1"
+                    />
+                    {/* Front Sheet - Fans right on hover */}
+                    <PaperSheet
+                        isHovered={isHovered}
+                        delay="delay-150"
+                        baseClasses="w-[120px] sm:w-[150px] md:w-[180px] h-[80px] sm:h-[100px] md:h-[120px] opacity-100 translate-y-[12px] sm:translate-y-[14px] md:translate-y-[16px] scale-100 z-20 rotate-0"
+                        hoverClasses="w-[120px] sm:w-[150px] md:w-[180px] h-[80px] sm:h-[100px] md:h-[120px] opacity-100 translate-y-0 sm:translate-y-1 md:translate-y-2 scale-[1.02] z-20 rotate-3 translate-x-1"
+                    />
+                </div>
             )}
 
-
-            {/* Front Pocket */}
-            <div
-                className={cn(
-                    "absolute bottom-0 left-0 w-full h-5/6 rounded-2xl z-20 p-5 flex flex-col justify-between overflow-hidden transition-all duration-300",
-                    isOver ? "ring-4 ring-offset-2 ring-emerald-500 scale-[1.02]" : ""
-                )}
-                style={{
-                    backgroundColor: baseColor,
-                    background: `linear-gradient(145deg, ${baseColor}, ${baseColor}dd)`,
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255,255,255,0.1)'
-                }}
-            >
-                {/* Header */}
-                <div className="flex justify-between items-start text-white relative z-10">
-                    <div className="flex flex-col gap-1 w-full min-w-0 pr-2">
-                        <h3 className="text-xl font-bold truncate tracking-tight" title={name}>
-                            {name}
-                        </h3>
-                        {description && (
-                            <p className="text-xs text-white/90 line-clamp-2 leading-relaxed wrap-break-word whitespace-normal opacity-90">
-                                {description}
-                            </p>
-                        )}
-                    </div>
-
-                    <div
-                        className="flex gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onPointerDown={(e) => e.stopPropagation()}
+            {/* 3. The Dark Folder Pocket (Overlay) */}
+            <div className="absolute bottom-0 left-0 right-0 h-[60%] z-30">
+                {/* SVG Shape for the Tab Cutout Geometry */}
+                <div className="absolute inset-0 w-full h-full text-[#1C1C1E] drop-shadow-lg">
+                    <svg
+                        viewBox="0 0 240 144"
+                        preserveAspectRatio="none"
+                        className="w-full h-full fill-current"
+                        xmlns="http://www.w3.org/2000/svg"
                     >
-                        {onEdit && (
+                        <defs>
+                            <filter id={`pocket-shadow-${id}`} x="-20%" y="-20%" width="140%" height="140%">
+                                <feDropShadow dx="0" dy="-4" stdDeviation="4" floodColor="#000000" floodOpacity="0.1" />
+                            </filter>
+                        </defs>
+                        <path d="
+                            M 0,144 
+                            L 0,10 
+                            Q 0,0 10,0 
+                            L 100,0 
+                            C 120,0 120,24 140,24 
+                            L 230,24 
+                            Q 240,24 240,34 
+                            L 240,144 
+                            Z"
+                        />
+                    </svg>
+                </div>
+
+                {/* Content Layout */}
+                <div className="absolute inset-0 p-3 sm:p-4 md:p-6 flex flex-col justify-between">
+                    {/* Header Area */}
+                    <div className="flex justify-between items-start mt-0.5 sm:mt-1">
+                        {/* Title & Subtitle */}
+                        <div className="flex flex-col gap-0 sm:gap-0.5 min-w-0 flex-1 pr-2">
+                            <h2 className="text-white text-[13px] sm:text-[15px] md:text-[18px] font-medium leading-tight tracking-wide truncate">
+                                {name}
+                            </h2>
+                            <span className="text-[#8E8E93] text-[10px] sm:text-[11px] md:text-[13px] font-normal truncate">
+                                {description || "Notes & More"}
+                            </span>
+                        </div>
+
+                        {/* Meatball Menu Icon */}
+                        <div onPointerDown={(e) => e.stopPropagation()} className="shrink-0">
                             <Popover>
                                 <PopoverTrigger asChild>
                                     <button
-                                        onClick={(e) => { e.stopPropagation(); }} /* Stop click but allow popover */
-                                        className="p-1 hover:bg-white/20 rounded-lg transition-colors text-white"
+                                        className="text-[#8E8E93] hover:text-white transition-colors p-1"
+                                        onClick={(e) => e.stopPropagation()}
                                     >
-                                        <MoreVertical size={16} />
+                                        <MoreHorizontal size={16} className="sm:w-[18px] sm:h-[18px] md:w-[20px] md:h-[20px]" />
                                     </button>
                                 </PopoverTrigger>
-                                <PopoverContent className="w-40 p-1" align="end">
-                                    <div className="flex flex-col gap-1">
+                                <PopoverContent className="w-32 sm:w-36 p-1 bg-[#2c2c2e] border-[#3a3a3c]" align="end">
+                                    <div className="flex flex-col">
                                         <Button
                                             variant="ghost"
                                             size="sm"
-                                            className="justify-start h-8 px-2 w-full font-normal"
+                                            className="justify-start h-7 sm:h-8 px-2 w-full font-normal text-white hover:bg-white/10 text-xs sm:text-sm"
                                             onClick={(e) => { e.stopPropagation(); onEdit?.(); }}
                                         >
-                                            <Edit size={14} className="mr-2" /> Edit Folder
+                                            <Edit size={12} className="mr-2 text-gray-400 sm:w-[14px] sm:h-[14px]" /> Edit
                                         </Button>
                                         <Button
                                             variant="ghost"
                                             size="sm"
-                                            className="justify-start h-8 px-2 w-full font-normal text-red-600 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10"
+                                            className="justify-start h-7 sm:h-8 px-2 w-full font-normal text-red-400 hover:text-red-300 hover:bg-red-500/10 text-xs sm:text-sm"
                                             onClick={(e) => { e.stopPropagation(); onDelete?.(); }}
                                         >
-                                            <Trash2 size={14} className="mr-2" /> Delete
+                                            <Trash2 size={12} className="mr-2 sm:w-[14px] sm:h-[14px]" /> Delete
                                         </Button>
                                     </div>
                                 </PopoverContent>
                             </Popover>
-                        )}
-                    </div>
-                </div>
-
-                {/* Footer */}
-                <div className="flex items-center justify-between text-white/90 relative z-10">
-                    <div className="flex items-center gap-1.5 text-xs font-medium bg-black/10 px-2.5 py-1 rounded-full backdrop-blur-sm">
-                        <FolderOpen size={12} />
-                        {noteCount}
+                        </div>
                     </div>
 
-                    {isOver && (
-                        <span className="text-xs font-bold animate-pulse bg-emerald-500/20 px-2 py-1 rounded-full">Drop to move</span>
-                    )}
+                    {/* Footer Area */}
+                    <div className="flex items-center gap-1.5 sm:gap-2 text-[#8E8E93] group-hover:text-white transition-colors duration-300">
+                        <FileText size={12} strokeWidth={2.5} className="sm:w-[14px] sm:h-[14px]" />
+                        <span className="text-[10px] sm:text-[11px] md:text-[12px] font-medium tracking-wide text-white/90">
+                            {noteCount.toLocaleString()} Files
+                        </span>
+                    </div>
                 </div>
-
-                {/* Decorative Shine */}
-                <div className="absolute -right-12 -top-12 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none" />
             </div>
+
+            {/* Drop Indicator */}
+            {isOver && (
+                <div className="absolute inset-0 rounded-[20px] sm:rounded-[28px] md:rounded-[32px] border-4 border-emerald-400 z-40 pointer-events-none animate-pulse" />
+            )}
         </div>
     );
 }
