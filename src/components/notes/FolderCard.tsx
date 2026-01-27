@@ -125,7 +125,8 @@ export function FolderCard({
                 "hover:scale-[1.02] transition-transform duration-300 ease-out",
                 "cursor-pointer md:touch-none mx-auto",
                 isOver && "scale-105 ring-4 ring-emerald-400",
-                isDragging && "opacity-50"
+                isDragging && "opacity-50",
+                ""
             )}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
@@ -133,7 +134,7 @@ export function FolderCard({
         >
             {/* 1. Background Gradient with Inner Highlight */}
             <div
-                className="absolute inset-0"
+                className="absolute inset-0 shadow-[inset_0_0_0_6px_#0F172A] rounded-[20px] sm:rounded-[28px] md:rounded-[32px]"
                 style={{
                     background: `linear-gradient(135deg, ${gradientStart} 0%, ${gradientEnd} 100%)`
                 }}
@@ -199,15 +200,15 @@ export function FolderCard({
                 </div>
 
                 {/* Content Layout */}
-                <div className="absolute inset-0 p-3 sm:p-4 md:p-6 flex flex-col justify-between">
+                <div className="absolute inset-0 p-3 sm:p-2 md:p-4 flex flex-col justify-between">
                     {/* Header Area */}
-                    <div className="flex justify-between items-start mt-0.5 sm:mt-1">
+                    <div className="flex justify-between items-start -ml-1 sm:-ml-1 mt-1.5 sm:mt-3">
                         {/* Title & Subtitle */}
-                        <div className="flex flex-col gap-0 sm:gap-0.5 min-w-0 flex-1 pr-2">
-                            <h2 className="text-slate-900 dark:text-white text-[13px] sm:text-[15px] md:text-[18px] font-medium leading-tight tracking-wide truncate">
+                        <div className="flex flex-col gap-0 sm:gap-0.5 min-w-0 flex-1 pr-2 -mt-3.5 md:-mt-4 sm:-mt-4.5">
+                            <h2 className="text-slate-900 dark:text-white w-[50px] sm:w-[80px] md:w-[100px] text-[12px] sm:text-[14px] md:text-[16px] font-medium leading-tight tracking-wide truncate-1">
                                 {name}
                             </h2>
-                            <span className="text-slate-500 dark:text-slate-400 text-[10px] sm:text-[11px] md:text-[13px] font-normal truncate">
+                            <span className="text-slate-500 dark:text-slate-400 text-[8px] sm:text-[10px] md:text-[12px] font-normal truncate-1">
                                 {description || "Notes & More"}
                             </span>
                         </div>
