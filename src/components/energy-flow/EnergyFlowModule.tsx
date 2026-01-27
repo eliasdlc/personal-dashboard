@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Task } from "@/components/dashboard/TaskWidget";
+import { useCompletionSound } from "@/hooks/use-completion-sound";
 import { PlanningView } from "./PlanningView";
 import { ExecutionView } from "./ExecutionView";
 import { Confetti } from "@/components/ui/confetti";
@@ -22,6 +23,7 @@ import { useRouter } from "next/navigation";
 
 export function EnergyFlowModule() {
     const router = useRouter();
+    const { playCompletionSound } = useCompletionSound();
 
     const [mode, setMode] = useState<'planning' | 'execution' | 'archive'>('execution');
     const [tasks, setTasks] = useState<Task[]>([]);
@@ -134,6 +136,7 @@ export function EnergyFlowModule() {
 
         if (newStatus === 'done') {
             setShowConfetti(true);
+            playCompletionSound();
             setTimeout(() => setShowConfetti(false), 2500);
         }
 
