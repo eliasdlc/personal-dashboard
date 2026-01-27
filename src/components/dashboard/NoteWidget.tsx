@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState, useMemo, JSX } from "react";
-import { Pin, Trash2, Plus, StickyNote, PenLine, FolderPlus, ArrowLeft, ArrowUp, CheckSquare, FolderInput, X, MoreVertical, Edit } from "lucide-react";
+import { useEffect, useState, useMemo, useRef, JSX } from "react";
+import { Pin, Trash2, Plus, StickyNote, PenLine, FolderPlus, ArrowLeft, ArrowUp, CheckSquare, FolderInput, X, MoreVertical, Edit, NotebookPen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Modal } from "@/components/ui/modal";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -85,6 +85,8 @@ export function NoteWidget() {
     const [content, setContent] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [isInputVisible, setIsInputVisible] = useState(false);
+    const inputRef = useRef<HTMLTextAreaElement>(null);
 
     // Editing State
     const [editingNote, setEditingNote] = useState<Note | null>(null);
@@ -205,6 +207,7 @@ export function NoteWidget() {
             setNotes((prev) => [newNote, ...prev]);
             setTitle('');
             setContent('');
+            setIsInputVisible(false);
 
         } catch (err: any) {
             console.error(err);
@@ -547,41 +550,79 @@ export function NoteWidget() {
                         </div>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-3">
-                        <div className="relative space-y-2">
-                            {(isFolderModalOpen || isSelecting || content.length > 0 || title.length > 0) && (
-                                <input
-                                    className="w-full bg-transparent text-sm font-semibold text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none px-1"
-                                    placeholder="Title (optional)"
-                                    value={title}
-                                    onChange={(e) => setTitle(e.target.value)}
+                    {/* Toggle Button for Note Input */}
+                    {!isInputVisible && (
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                                setIsInputVisible(true);
+                                setTimeout(() => inputRef.current?.focus(), 100);
+                            }}
+                            className="w-full gap-2 hover:bg-slate-50 dark:hover:bg-slate-800/40 text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 border border-dashed border-slate-300 dark:border-slate-700 hover:border-emerald-500/50 dark:hover:border-emerald-500/50 transition-all"
+                        >
+                            <NotebookPen size={16} />
+                            <span>Add a note...</span>
+                        </Button>
+                    )}
+
+                    {/* Collapsible Note Input Form */}
+                    <div
+                        className={cn(
+                            "transition-all duration-300 ease-out",
+                            isInputVisible ? "max-h-[200px] opacity-100 mt-3 overflow-visible" : "max-h-0 opacity-0 overflow-hidden"
+                        )}
+                    >
+                        <form onSubmit={handleSubmit} className="space-y-3">
+                            <div className="relative space-y-2">
+                                <div className="flex items-center justify-between">
+                                    <input
+                                        className="flex-1 bg-transparent text-sm font-semibold text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none px-1"
+                                        placeholder="Title (optional)"
+                                        value={title}
+                                        onChange={(e) => setTitle(e.target.value)}
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => {
+                                            setIsInputVisible(false);
+                                            setTitle('');
+                                            setContent('');
+                                        }}
+                                        className="h-6 w-6 p-0 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                                    >
+                                        <X size={14} />
+                                    </Button>
+                                </div>
+                                <Textarea
+                                    ref={inputRef}
+                                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/50 px-4 py-3 text-sm text-slate-900 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20 resize-none transition-all"
+                                    placeholder={currentFolder ? `Add a note to ${currentFolder.name}...` : "Write a quick note..."}
+                                    value={content}
+                                    onChange={(e) => setContent(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' && !e.shiftKey) {
+                                            e.preventDefault();
+                                            handleSubmit(e as unknown as React.FormEvent);
+                                        }
+                                    }}
+                                    rows={2}
                                 />
-                            )}
-                            <Textarea
-                                className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/50 px-4 py-3 text-sm text-slate-900 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20 resize-none transition-all"
-                                placeholder={currentFolder ? `Add a note to ${currentFolder.name}...` : "Write a quick note..."}
-                                value={content}
-                                onChange={(e) => setContent(e.target.value)}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter' && !e.shiftKey) {
-                                        e.preventDefault();
-                                        handleSubmit(e as unknown as React.FormEvent);
-                                    }
-                                }}
-                                rows={2}
-                            />
-                            <div className="absolute right-2 bottom-2">
-                                <Button
-                                    type="submit"
-                                    disabled={submitting || !content.trim()}
-                                    size="sm"
-                                    className="h-8 w-8 p-0 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 dark:shadow-emerald-900/20 transition-all disabled:opacity-50 disabled:shadow-none"
-                                >
-                                    {submitting ? <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <ArrowUp size={16} />}
-                                </Button>
+                                <div className="absolute right-2 bottom-2">
+                                    <Button
+                                        type="submit"
+                                        disabled={submitting || !content.trim()}
+                                        size="sm"
+                                        className="h-8 w-8 p-0 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 dark:shadow-emerald-900/20 transition-all disabled:opacity-50 disabled:shadow-none"
+                                    >
+                                        {submitting ? <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <ArrowUp size={16} />}
+                                    </Button>
+                                </div>
                             </div>
-                        </div>
-                    </form>
+                        </form>
+                    </div>
                     {error && (
                         <p className="mt-2 text-xs text-red-500 dark:text-red-400 px-1">{error}</p>
                     )}
