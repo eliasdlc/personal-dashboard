@@ -63,4 +63,5 @@ export const updateFolder = z.object({
   description: z.string().max(127).optional(),
   parentId: z.string().nullable().optional(),
   color: z.string().max(20).optional(),
+  order: z.number().int().min(0).optional(),
 });

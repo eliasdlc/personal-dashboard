@@ -8,8 +8,8 @@ import { success } from "zod";
 
 export async function GET(
     request: NextRequest,
-     { params }: { params: Promise<{ id: string }> }
-    ) {
+    { params }: { params: Promise<{ id: string }> }
+) {
     const session = await auth();
     if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -24,7 +24,7 @@ export async function GET(
             where: and(eq(folders.id, id), eq(folders.userId, userId)),
         });
 
-        if (!folder){
+        if (!folder) {
             return NextResponse.json({ error: 'Folder not found' }, { status: 404 });
         }
 
@@ -56,7 +56,7 @@ export async function PATCH(
             );
         }
 
-        const { name, description, parentId, color } = result.data;
+        const { name, description, parentId, color, order } = result.data;
 
         const folderToUpdate = await db.query.folders.findFirst({
             where: and(eq(folders.id, id), eq(folders.userId, userId)),
@@ -83,20 +83,22 @@ export async function PATCH(
             // Para producción robusta, deberías verificar que 'newParent' no sea descendiente de 'id'.
             // Esto implica recursivamente verificar cada ancestro de 'newParent' para evitar bucles.
 
-            
+
         }
 
-        await db.update(folders)
-        .set({
-            name: name || folderToUpdate.name,
-            description: description || folderToUpdate.description,
-            parentId: parentId || folderToUpdate.parentId,
-            color: color || folderToUpdate.color,
-            updatedAt: new Date(),
-        })
-        .where(and(eq(folders.id, id), eq(folders.userId, userId)));
+        const [updatedFolder] = await db.update(folders)
+            .set({
+                name: name ?? folderToUpdate.name,
+                description: description !== undefined ? description : folderToUpdate.description,
+                parentId: parentId !== undefined ? parentId : folderToUpdate.parentId,
+                color: color ?? folderToUpdate.color,
+                order: order !== undefined ? order : folderToUpdate.order,
+                updatedAt: new Date(),
+            })
+            .where(and(eq(folders.id, id), eq(folders.userId, userId)))
+            .returning();
 
-        return NextResponse.json({ message: 'Folder updated successfully' }, { status: 200 });
+        return NextResponse.json(updatedFolder, { status: 200 });
     } catch (error) {
         console.error('[FOLDERS_PATCH]:', error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
@@ -115,8 +117,8 @@ export async function DELETE(
 
     try {
         const result = await db.delete(folders)
-        .where(and(eq(folders.id, id), eq(folders.userId, userId)))
-        .returning({ id: folders.id });
+            .where(and(eq(folders.id, id), eq(folders.userId, userId)))
+            .returning({ id: folders.id });
 
         if (!result.length) {
             return NextResponse.json({ error: 'Folder not found or unauthorized' }, { status: 404 });

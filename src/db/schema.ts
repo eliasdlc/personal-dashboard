@@ -96,6 +96,7 @@ export const folders = pgTable('folders', {
   description: varchar('description', { length: 127 }),
   parentId: text('parent_id'),
   color: varchar('color', { length: 20 }),
+  order: integer('order').default(0).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true })
     .defaultNow()
     .notNull(),

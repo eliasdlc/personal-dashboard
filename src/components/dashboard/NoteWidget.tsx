@@ -32,6 +32,7 @@ export type Folder = {
     description: string | null;
     color: string | null;
     parentId: string | null;
+    order: number;
     createdAt: string;
     updatedAt: string;
 };
@@ -386,22 +387,52 @@ export function NoteWidget() {
 
         // Case 1: Reordering folders (folder dragged onto another folder position)
         if (activeType === 'folder' && targetType === 'folder' && activeId !== targetId) {
-            // Get current folder order (only root folders can be reordered)
-            const rootFolders = folders.filter(f => !f.parentId);
-            const rootFolderIds = rootFolders.map(f => f.id);
-            const activeIndex = rootFolderIds.indexOf(activeId);
-            const targetIndex = rootFolderIds.indexOf(targetId);
+            // Get folders at the current level (same parentId)
+            const activeFolder = folders.find(f => f.id === activeId);
+            const targetFolder = folders.find(f => f.id === targetId);
+
+            if (!activeFolder || !targetFolder) return;
+
+            // Only reorder if they're at the same level
+            if (activeFolder.parentId !== targetFolder.parentId) return;
+
+            const siblingFolders = folders
+                .filter(f => f.parentId === activeFolder.parentId)
+                .sort((a, b) => a.order - b.order);
+
+            const siblingIds = siblingFolders.map(f => f.id);
+            const activeIndex = siblingIds.indexOf(activeId);
+            const targetIndex = siblingIds.indexOf(targetId);
 
             if (activeIndex !== -1 && targetIndex !== -1) {
-                // Reorder folders using arrayMove (recommended by dnd-kit)
-                const reorderedRootFolders = arrayMove(rootFolders, activeIndex, targetIndex);
+                // Reorder folders using arrayMove
+                const reorderedSiblings = arrayMove(siblingFolders, activeIndex, targetIndex);
 
-                // Merge with non-root folders
-                const nonRootFolders = folders.filter(f => f.parentId);
-                setFolders([...reorderedRootFolders, ...nonRootFolders]);
+                // Assign new order values
+                const updatedSiblings = reorderedSiblings.map((folder, index) => ({
+                    ...folder,
+                    order: index
+                }));
 
-                // Note: If you want to persist folder order, you'd need to add an 'order' field
-                // to the schema and update it via API. For now, this is just visual reordering.
+                // Optimistic update: merge with other folders
+                const otherFolders = folders.filter(f => f.parentId !== activeFolder.parentId);
+                setFolders([...otherFolders, ...updatedSiblings].sort((a, b) => a.order - b.order));
+
+                // Persist order changes to API
+                try {
+                    await Promise.all(
+                        updatedSiblings.map(folder =>
+                            fetch(`/api/folders/${folder.id}`, {
+                                method: 'PATCH',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ order: folder.order })
+                            })
+                        )
+                    );
+                } catch (err) {
+                    console.error("Failed to persist folder order", err);
+                    fetchFolders(); // Revert on error
+                }
             }
             return;
         }
@@ -603,7 +634,7 @@ export function NoteWidget() {
                                     </h3>
                                     <SortableContext items={folders.filter(f => f.parentId === currentFolderId).map(f => f.id)} strategy={rectSortingStrategy}>
                                         {/* Mobile: 2-column grid | Desktop: horizontal scroll with flex */}
-                                        <div className="grid grid-cols-2 gap-4 md:flex md:flex-wrap md:gap-5 md:overflow-x-auto md:pb-2 custom-scrollbar">
+                                        <div className="grid grid-cols-2 gap-4 md:flex md:flex-wrap md:gap-5 p-4 -m-4">
                                             {folders.filter(f => f.parentId === currentFolderId).map(folder => (
                                                 <div key={folder.id} className="w-full flex justify-center md:w-auto md:flex-shrink-0">
                                                     <FolderCard

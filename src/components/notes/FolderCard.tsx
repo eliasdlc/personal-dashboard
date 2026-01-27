@@ -134,13 +134,14 @@ export function FolderCard({
         >
             {/* 1. Background Gradient with Inner Highlight */}
             <div
-                className="absolute inset-0 shadow-[inset_0_0_0_6px_#0F172A] rounded-[20px] sm:rounded-[28px] md:rounded-[32px]"
+                className="absolute inset-0 rounded-[20px] sm:rounded-[28px] md:rounded-[32px]"
                 style={{
                     background: `linear-gradient(135deg, ${gradientStart} 0%, ${gradientEnd} 100%)`
                 }}
             >
                 {/* Subtle inner top highlight to mimic plastic/glass */}
-                <div className="absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-white/20 to-transparent pointer-events-none" />
+                {/* <div className="absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-white/20 to-transparent pointer-events-none" /> */}
+                <div className="absolute inset-0 shadow-[inset_0_0_0_6px_#F1F5F9] dark:shadow-[inset_0_0_0_6px_#0F172A] rounded-[20px] sm:rounded-[28px] md:rounded-[32px]" />
             </div>
 
             {/* 2. Paper Elements - Animated on Hover */}
