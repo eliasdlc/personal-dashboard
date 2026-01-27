@@ -89,8 +89,12 @@ export function NoteCard({
         >
             {/* ================= ACCENT STRIPE (30%) ================= */}
             <div
-                className="h-[4px] sm:h-[5px] w-full shrink-0"
-                style={{ backgroundColor: accentColor }}
+                className="absolute inset-x-0 top-0 h-[30px] sm:h-[40px] pointer-events-none"
+                style={{
+                    borderTop: `4px solid ${accentColor}`,
+                    borderTopLeftRadius: '20px',
+                    borderTopRightRadius: '20px',
+                }}
             />
 
             {/* ================= HEADER ================= */}

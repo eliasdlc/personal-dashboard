@@ -603,7 +603,7 @@ export function NoteWidget() {
                                     </h3>
                                     <SortableContext items={folders.filter(f => f.parentId === currentFolderId).map(f => f.id)} strategy={rectSortingStrategy}>
                                         {/* Mobile: 2-column grid | Desktop: horizontal scroll with flex */}
-                                        <div className="grid grid-cols-2 gap-4 md:flex md:flex-wrap md:gap-5 md:overflow-x-auto md:pb-2 custom-scrollbar">
+                                        <div className="grid grid-cols-2 gap-4 md:flex md:flex-wrap md:gap-5 p-4 -m-4">
                                             {folders.filter(f => f.parentId === currentFolderId).map(folder => (
                                                 <div key={folder.id} className="w-full flex justify-center md:w-auto md:flex-shrink-0">
                                                     <FolderCard
