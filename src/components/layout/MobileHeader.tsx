@@ -39,7 +39,7 @@ export function MobileHeader({ user }: MobileHeaderProps) {
                             )}
                         </button>
                     </PopoverTrigger>
-                    <PopoverContent align="end" className="w-56 p-2">
+                    <PopoverContent align="end" className="w-56 p-2 bg-slate-50 dark:bg-slate-900">
                         <div className="px-2 py-1.5 mb-2 border-b border-slate-200 dark:border-slate-700">
                             <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{user?.name}</p>
                             <p className="text-xs text-slate-500 truncate">{user?.email}</p>
