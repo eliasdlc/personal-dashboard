@@ -1,14 +1,21 @@
 import { DashboardShell } from '@/components/layout/DashboardShell';
-import { Sidebar } from '@/components/layout/Sidebar';
+import { Topbar } from '@/components/layout/Topbar';
+import { MobileHeader } from '@/components/layout/MobileHeader';
+import { auth } from '@/lib/auth';
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
-    return (
+    const session = await auth();
+    const user = session?.user;
 
-        <DashboardShell sidebar={<Sidebar />}>
+    return (
+        <DashboardShell
+            topbar={<Topbar />}
+            mobileHeader={<MobileHeader user={user} />}
+        >
             {children}
         </DashboardShell>
     );

@@ -2,13 +2,16 @@ import { QuickExpenseWidget } from '@/components/dashboard/QuickExpensesWidget';
 
 export default function ExpensesPage() {
     return (
-        <div className="h-full p-6 flex flex-col">
-            <div className="mb-6">
-                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Expenses</h1>
-                <p className="text-slate-500 dark:text-slate-400">Track your quick expenses</p>
-            </div>
+        <div className="h-full p-4 flex flex-col">
             <div className="flex-1 min-h-0">
                 <QuickExpenseWidget />
+            </div>
+
+            {/* Inspirational Quote / Footer - Subtle Psychology touch */}
+            <div className="mt-4 text-center">
+                <p className="text-[10px] text-slate-400 dark:text-slate-600 font-medium uppercase tracking-widest opacity-60">
+                    Your expenses are your future.
+                </p>
             </div>
         </div>
     );
