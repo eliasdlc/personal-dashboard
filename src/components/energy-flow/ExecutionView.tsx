@@ -103,7 +103,7 @@ export function ExecutionView({ tasks, onToggle, onDelete, onUpdateEnergy, onReo
                     {/* Progress Bar */}
                     <div className="flex flex-col gap-2">
                         <div className="flex justify-between text-xs text-slate-500 font-medium uppercase tracking-wider">
-                            <span>Daily Progress</span>``
+                            <span>Daily Progress</span>
                             <span>{Math.round(progress)}%</span>
                         </div>
                         <div className="h-2 w-full bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">

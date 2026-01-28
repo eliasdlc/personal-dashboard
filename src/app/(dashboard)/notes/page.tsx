@@ -2,7 +2,7 @@ import { NoteWidget } from '@/components/dashboard/NoteWidget';
 
 export default function NotesPage() {
     return (
-        <div className="h-full p-4 md:p-8 flex flex-col max-w-[1920px] mx-auto w-full">
+        <div className="h-full p-4 flex flex-col max-w-[1920px] mx-auto w-full">
             <div className="flex-1 min-h-0">
                 <NoteWidget />
             </div>
