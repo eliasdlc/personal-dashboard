@@ -404,7 +404,7 @@ export function EnergyFlowModule() {
     return (
         <div className="flex flex-col h-full bg-white dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800/60 shadow-xl overflow-hidden">
             {/* Header */}
-            <div className="p-4 gap-4 border-b border-slate-200 dark:border-slate-800/60 flex justify-between items-center bg-slate-50/80 dark:bg-slate-900/40 backdrop-blur-md">
+            <div className="p-4 gap-2 border-b border-slate-200 dark:border-slate-800/60 flex justify-between items-center bg-slate-50/80 dark:bg-slate-900/40 backdrop-blur-md">
                 <h2 className="font-bold text-lg text-slate-900 dark:text-white flex items-center gap-2.5">
                     <div className="p-1.5 rounded-lg bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400">
                         <Zap size={18} />

@@ -4,7 +4,8 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useEffect, useState, useMemo } from "react";
-import { Plus, Trash2, Check, Circle, ListTodo } from "lucide-react";
+import { Plus, ListTodo } from "lucide-react";
+import { TaskCard } from "../energy-flow/TaskCard";
 
 
 export type Task = {
@@ -13,24 +14,30 @@ export type Task = {
     title: string;
     description: string | null;
     status: string;
-    energyLevel?: 'high_focus' | 'low_energy';
+    energyLevel?: 'high_focus' | 'low_energy' | null;
     contextId?: string | null;
     statusFunnel?: 'backlog' | 'weekly' | 'today';
     dueDate?: string | Date | null;
     createdAt: string;
     updatedAt: string;
     position?: string | number | null;
+    parentId?: string | null;
+    subtasks?: Task[];
 };
 
 export function TaskWidget() {
 
     const [tasks, setTasks] = useState<Task[]>([]);
 
-    // Ensure uniqueness for rendering to prevent key errors
-    const uniqueTasks = useMemo(() => {
+    // Ensure uniqueness and filter out subtasks (show only top-level)
+    const topLevelTasks = useMemo(() => {
         const seen = new Set();
         return tasks.filter(task => {
             if (!task.id || seen.has(task.id)) return false;
+            // Only show if no parentId (top level) OR if parent is not in the list (fallback)
+            // Ideally just !task.parentId
+            if (task.parentId) return false;
+
             seen.add(task.id);
             return true;
         });
@@ -42,9 +49,6 @@ export function TaskWidget() {
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-
-
-
     async function fetchTasks() {
         try {
             setLoading(true);
@@ -53,10 +57,11 @@ export function TaskWidget() {
             if (!res.ok) throw new Error('Failed to load tasks');
 
             const data: Task[] = await res.json();
-            // Filter valid tasks and deduplicate
+            // Data includes subtasks nested in `subtasks` array, AND potentially as separate rows depending on API
+            // API uses `findMany` which returns all matching rows. 
+            // If subtasks are in DB, they are returned. 
+            // We use `topLevelTasks` memo to filter them for display.
             const validTasks = data.filter(t => t && t.id);
-            // We'll rely on the useMemo above for rendering uniqueness, 
-            // but it's good to keep the state clean too.
             const deduplicatedTasks = Array.from(new Map(validTasks.map(item => [item.id, item])).values());
             setTasks(deduplicatedTasks);
         } catch (err: any) {
@@ -114,8 +119,27 @@ export function TaskWidget() {
         }
     }
 
-    async function toggleDone(task: Task) {
+    async function toggleDone(task: Task | any) { // Type 'any' allowed for subtasks if they come from DndKit as loose objects
         const newStatus = task.status === 'done' ? 'todo' : 'done';
+
+        // Optimistic update
+        setTasks((prev) => prev.map((t) => {
+            if (t.id === task.id) return { ...t, status: newStatus };
+            // Also check subtasks if we are toggling a subtask inside a parent?
+            // TaskCard handles UI update for subtask array if we pass it correctly or if it uses internal state/optimistic
+            // But since we own `tasks` state, we should update nested subtasks too if possible.
+            // However, updating nested structure deeply is complex here without deep clone identification.
+            // For now, simple ID match (likely only hits top level).
+            // Subtasks toggles usually trigger re-fetch or need simpler logic.
+            // Let's rely on API + re-fetch or partial update if needed.
+            if (t.subtasks) {
+                return {
+                    ...t,
+                    subtasks: t.subtasks.map(st => st.id === task.id ? { ...st, status: newStatus } : st)
+                };
+            }
+            return t;
+        }));
 
         try {
             const res = await fetch(`/api/tasks/${task.id}`, {
@@ -127,9 +151,22 @@ export function TaskWidget() {
             if (!res.ok) throw new Error('Failed to update task');
 
             const updatedTask: Task = await res.json();
-            setTasks((prev) => prev.map((t) => (t.id === task.id ? updatedTask : t)));
+
+            // Re-sync with server response
+            setTasks((prev) => prev.map((t) => {
+                if (t.id === updatedTask.id) return updatedTask;
+                if (t.subtasks) {
+                    // Update if it was a subtask
+                    return {
+                        ...t,
+                        subtasks: t.subtasks.map(st => st.id === updatedTask.id ? updatedTask : st)
+                    };
+                }
+                return t;
+            }));
         } catch (err) {
             console.error(err);
+            fetchTasks(); // Revert on error
         }
     }
 
@@ -154,48 +191,33 @@ export function TaskWidget() {
                         <ListTodo size={18} />
                     </div>
                     Tasks
-                    <span className="text-xs font-medium px-2 py-0.5 bg-slate-100 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400 rounded-full border border-slate-200 dark:border-slate-700/50">{tasks.length}</span>
+                    <span className="text-xs font-medium px-2 py-0.5 bg-slate-100 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400 rounded-full border border-slate-200 dark:border-slate-700/50">{topLevelTasks.length}</span>
                 </h2>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar relative z-10">
-                {loading && uniqueTasks.length === 0 ? (
+            <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar relative z-10">
+                {loading && topLevelTasks.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full text-slate-500 gap-2">
                         <div className="w-5 h-5 border-2 border-slate-400 dark:border-slate-600 border-t-transparent rounded-full animate-spin" />
                         <p className="text-sm">Loading tasks...</p>
                     </div>
-                ) : uniqueTasks.length === 0 ? (
+                ) : topLevelTasks.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full text-slate-400 dark:text-slate-500 gap-2 opacity-60">
                         <ListTodo size={32} strokeWidth={1.5} />
                         <p className="text-sm">No tasks yet</p>
                     </div>
                 ) : (
-                    uniqueTasks.map((task) => (
-                        <div key={task.id} className="group/item flex w-full items-center gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-700/50">
-                            <button
-                                onClick={() => toggleDone(task)}
-                                className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all shrink-0 cursor-pointer ${task.status === 'done'
-                                    ? 'bg-blue-600 border-blue-600 text-white shadow-sm shadow-blue-900/20'
-                                    : 'border-slate-300 dark:border-slate-600 hover:border-blue-500 text-transparent'
-                                    }`}
-                            >
-                                <Check size={12} strokeWidth={3} />
-                            </button>
-
-                            <div className="w-0 flex-1">
-                                <p className={`text-sm font-medium break-all whitespace-normal transition-all ${task.status === 'done' ? 'text-slate-400 dark:text-slate-500 line-through decoration-slate-400 dark:decoration-slate-600' : 'text-slate-700 dark:text-slate-200'
-                                    }`}>{task.title}</p>
-                                {task.description && <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 line-clamp-1">{task.description}</p>}
-                            </div>
-
-                            <button
-                                onClick={() => deleteTask(task.id)}
-                                className="opacity-0 group-hover/item:opacity-100 p-2 rounded-lg text-slate-400 dark:text-slate-500 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-500 dark:hover:text-red-400 transition-all"
-                                title="Delete task"
-                            >
-                                <Trash2 size={15} />
-                            </button>
-                        </div>
+                    topLevelTasks.map((task) => (
+                        <TaskCard
+                            key={task.id}
+                            task={task}
+                            onToggle={toggleDone}
+                            onDelete={deleteTask}
+                            onToggleSubtask={toggleDone} // Reuse toggle logic for subtasks
+                            className="bg-white dark:bg-slate-900/50 shadow-sm border-slate-200 dark:border-slate-800/80"
+                            showEnergy={true}
+                            showContext={true}
+                        />
                     ))
                 )}
             </div>
