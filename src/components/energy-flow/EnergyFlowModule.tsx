@@ -652,9 +652,9 @@ export function EnergyFlowModule() {
                                         <button
                                             key={ctx.id}
                                             onClick={() => setEditContextId(editContextId === ctx.id ? null : ctx.id)}
-                                            className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all flex items-center gap-2 ${editContextId === ctx.id
-                                                ? `${ctx.color.bg} ${ctx.color.text} ${ctx.color.border}`
-                                                : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600'
+                                            className={`px-3.5 py-2 rounded-lg text-xs font-medium transition-all flex items-center gap-2 ${editContextId === ctx.id
+                                                ? `${ctx.color.bg} ${ctx.color.text}`
+                                                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
                                                 }`}
                                         >
                                             {editContextId === ctx.id && <Check size={12} />}
