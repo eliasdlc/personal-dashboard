@@ -1,37 +1,56 @@
+'use client';
+
 import { Task } from "@/components/dashboard/TaskWidget";
+import { ExecutionColumn } from "./ExecutionColumn";
 import { TaskCard } from "./TaskCard";
-import { SortableTaskCard } from "./SortableTaskCard";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Zap, Coffee, RefreshCw, AlertCircle } from "lucide-react";
-import { DndContext, DragOverlay, useDroppable, DragEndEvent, DragStartEvent, useSensors, useSensor, MouseSensor, TouchSensor } from "@dnd-kit/core";
-import { SortableContext, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
-import { useState } from "react";
+import { Zap, Coffee, CheckCircle2, RefreshCw, AlertCircle, Sparkles, PartyPopper, HelpCircle } from "lucide-react";
+import { DndContext, DragOverlay, DragEndEvent, DragStartEvent, useSensors, useSensor, MouseSensor, TouchSensor } from "@dnd-kit/core";
+import { arrayMove } from "@dnd-kit/sortable";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
+import { startOfToday } from "date-fns";
 
 interface ExecutionViewProps {
     tasks: Task[];
     onToggle: (task: Task) => void;
     onDelete: (taskId: string) => void;
-    onUpdateEnergy: (taskId: string, energy: 'high_focus' | 'low_energy') => void;
+    onUpdateEnergy: (taskId: string, energy: 'high_focus' | 'low_energy' | 'none') => void;
     onReorder: (tasksToUpdate: { id: string, position: number }[]) => void;
     onCleanSlate?: () => void;
     onEdit: (task: Task) => void;
+    onToggleSubtask?: (subtask: any) => void;
+    onDeleteSubtask?: (subtaskId: string) => void;
+    onAddSubtask?: (parentId: string, title: string) => void;
 }
 
-export function ExecutionView({ tasks, onToggle, onDelete, onUpdateEnergy, onReorder, onCleanSlate, onEdit }: ExecutionViewProps) {
-    const todayTasks = tasks.filter(t => t.statusFunnel === 'today');
-    const highFocusTasks = todayTasks.filter(t => t.energyLevel === 'high_focus' && t.status === 'todo');
-    const lowEnergyTasks = todayTasks.filter(t => t.energyLevel === 'low_energy' && t.status === 'todo');
+export function ExecutionView({ tasks, onToggle, onDelete, onUpdateEnergy, onReorder, onCleanSlate, onEdit, onToggleSubtask, onDeleteSubtask, onAddSubtask }: ExecutionViewProps) {
+    // Filter out subtasks from main lists (only show parent tasks or tasks without parent)
+    const mainTasks = useMemo(() => tasks.filter(t => !t.parentId), [tasks]);
+
+    // Today's tasks (in "today" funnel)
+    const todayTasks = mainTasks.filter(t => t.statusFunnel === 'today');
+
+    // Active tasks (not done) - filter by energy level
+    // Active tasks (not done) - filter by energy level
+    const highFocusTasks = useMemo(() =>
+        todayTasks.filter(t => t.energyLevel === 'high_focus' && t.status !== 'done'),
+        [todayTasks]);
+
+    const lowEnergyTasks = useMemo(() =>
+        todayTasks.filter(t => (!t.energyLevel || t.energyLevel === 'low_energy') && t.status !== 'done'),
+        [todayTasks]);
+    // Note: Treating unassigned/null energy as low_energy for now to ensure they show up somewhere if they exist
+
     const [activeId, setActiveId] = useState<string | null>(null);
 
-    // Progress Logic
+    // Progress Logic - based on today's tasks
     const completedCount = todayTasks.filter(t => t.status === 'done').length;
     const totalCount = todayTasks.length;
     const progress = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
     // Clean Slate Logic
     const pendingCount = todayTasks.length - completedCount;
-    const showCleanSlate = pendingCount > 5;
+    const showCleanSlate = pendingCount > 10;
 
     const sensors = useSensors(
         useSensor(MouseSensor, {
@@ -87,10 +106,14 @@ export function ExecutionView({ tasks, onToggle, onDelete, onUpdateEnergy, onReo
             }
         }
 
-        if (isHighFocus && (overId === 'low-energy-droppable' || lowEnergyTasks.find(t => t.id === overId) && !highFocusTasks.find(t => t.id === overId))) {
-            onUpdateEnergy(taskId, 'low_energy');
-        } else if (isLowEnergy && (overId === 'high-focus-droppable' || highFocusTasks.find(t => t.id === overId) && !lowEnergyTasks.find(t => t.id === overId))) {
+        // Handle moving between energy levels
+        const isOverHigh = overId === 'high-focus-droppable' || (highFocusTasks.find(t => t.id === overId) && !isHighFocus);
+        const isOverLow = overId === 'low-energy-droppable' || (lowEnergyTasks.find(t => t.id === overId) && !isLowEnergy);
+
+        if (isOverHigh && !isHighFocus) {
             onUpdateEnergy(taskId, 'high_focus');
+        } else if (isOverLow && !isLowEnergy) {
+            onUpdateEnergy(taskId, 'low_energy');
         }
     }
 
@@ -108,7 +131,7 @@ export function ExecutionView({ tasks, onToggle, onDelete, onUpdateEnergy, onReo
                         </div>
                         <div className="h-2 w-full bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
                             <div
-                                className="h-full bg-linear-to-r from-emerald-500 to-emerald-400 transition-all duration-500"
+                                className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 transition-all duration-500"
                                 style={{ width: `${progress}%` }}
                             />
                         </div>
@@ -146,15 +169,20 @@ export function ExecutionView({ tasks, onToggle, onDelete, onUpdateEnergy, onReo
                         subtitle="Deep work & complex tasks"
                         count={highFocusTasks.length}
                         tasks={highFocusTasks}
+                        allTasks={tasks}
                         onToggle={onToggle}
                         onDelete={onDelete}
                         onEdit={onEdit}
+                        onToggleSubtask={onToggleSubtask}
+                        onAddSubtask={onAddSubtask}
                         icon={<Zap size={18} className="fill-current" />}
                         headerClass="border-amber-200 dark:border-amber-500/20"
                         iconClass="bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400"
                         badgeClass="bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-100 dark:border-amber-500/20"
                         cardClass="border-l-4 border-l-amber-400 dark:border-l-amber-500 hover:border-amber-300 dark:hover:border-amber-500/50"
-                        emptyText="No high focus tasks for today."
+                        emptyText="All caught up on deep work!"
+                        emptyIcon={<Sparkles size={32} strokeWidth={1.5} />}
+                        showTaskEnergy={false}
                     />
 
                     {/* Vertical Divider */}
@@ -167,15 +195,20 @@ export function ExecutionView({ tasks, onToggle, onDelete, onUpdateEnergy, onReo
                         subtitle="Low energy & admin tasks"
                         count={lowEnergyTasks.length}
                         tasks={lowEnergyTasks}
+                        allTasks={tasks}
                         onToggle={onToggle}
                         onDelete={onDelete}
                         onEdit={onEdit}
+                        onToggleSubtask={onToggleSubtask}
+                        onAddSubtask={onAddSubtask}
                         icon={<Coffee size={18} />}
                         headerClass="border-emerald-200 dark:border-emerald-500/20"
                         iconClass="bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
                         badgeClass="bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-500/20"
                         cardClass="border-l-4 border-l-emerald-400 dark:border-l-emerald-500 opacity-90 hover:opacity-100 hover:border-emerald-300 dark:hover:border-emerald-500/50"
                         emptyText="No low energy tasks for today."
+                        emptyIcon={<Coffee size={32} strokeWidth={1.5} />}
+                        showTaskEnergy={false}
                     />
                 </div>
             </div>
@@ -186,65 +219,5 @@ export function ExecutionView({ tasks, onToggle, onDelete, onUpdateEnergy, onReo
                 ) : null}
             </DragOverlay>
         </DndContext>
-    );
-}
-
-interface ExecutionColumnProps {
-    id: string;
-    title: string;
-    subtitle: string;
-    count: number;
-    tasks: Task[];
-    onToggle: (task: Task) => void;
-    onDelete: (id: string) => void;
-    onEdit: (task: Task) => void;
-    icon: React.ReactNode;
-    headerClass: string;
-    iconClass: string;
-    badgeClass: string;
-    cardClass: string;
-    emptyText: string;
-}
-
-function ExecutionColumn({ id, title, subtitle, count, tasks, onToggle, onDelete, onEdit, icon, headerClass, iconClass, badgeClass, cardClass, emptyText }: ExecutionColumnProps) {
-    const { setNodeRef } = useDroppable({ id });
-
-    return (
-        <div ref={setNodeRef} className="flex-1 flex flex-col min-w-0">
-            <div className={`flex items-center gap-2 mb-4 pb-2 border-b ${headerClass}`}>
-                <div className={`p-1.5 rounded-lg ${iconClass}`}>
-                    {icon}
-                </div>
-                <div>
-                    <h3 className="font-bold text-slate-900 dark:text-white">{title}</h3>
-                    <p className="text-xs text-slate-500">{subtitle}</p>
-                </div>
-                <span className={`ml-auto px-2.5 py-0.5 rounded-full text-xs font-medium border ${badgeClass}`}>
-                    {count}
-                </span>
-            </div>
-
-            <ScrollArea className="flex-1 -mr-3 pr-3">
-                <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
-                    <div className="space-y-3 pb-4 min-h-[100px]">
-                        {tasks.map(task => (
-                            <SortableTaskCard
-                                key={task.id}
-                                task={task}
-                                onToggle={onToggle}
-                                onDelete={onDelete}
-                                onEdit={onEdit}
-                                className={cardClass}
-                            />
-                        ))}
-                        {tasks.length === 0 && (
-                            <div className="text-center py-12 text-slate-400 dark:text-slate-600 text-sm">
-                                {emptyText}
-                            </div>
-                        )}
-                    </div>
-                </SortableContext>
-            </ScrollArea>
-        </div>
     );
 }

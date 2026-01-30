@@ -8,12 +8,7 @@ export default function EnergyFlowPage() {
                 <EnergyFlowModule />
             </div>
 
-            {/* Inspirational Quote / Footer - Subtle Psychology touch */}
-            <div className="mt-4 text-center">
-                <p className="text-[10px] text-slate-400 dark:text-slate-600 font-medium uppercase tracking-widest opacity-60">
-                    Controlling your energy flow is key to success.
-                </p>
-            </div>
+
         </div>
     );
 }

@@ -29,6 +29,20 @@
       "when": 1769485032250,
       "tag": "0003_daily_gressill",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1769647206620,
+      "tag": "0004_previous_the_executioner",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1769739485465,
+      "tag": "0005_graceful_pretty_boy",
+      "breakpoints": true
     }
   ]
 }

@@ -79,7 +79,7 @@ export function QuickAdd({ onTaskAdded, defaultFunnel = 'backlog' }: QuickAddPro
                 <Input
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Agrega algo rápido para HOY..."
+                    placeholder="Add something quick for TODAY..."
                     className="border-none shadow-none focus-visible:ring-0 p-2 sm:p-4 text-lg sm:text-xl font-medium placeholder:text-slate-400 dark:placeholder:text-slate-600 text-slate-900 dark:text-slate-200 bg-transparent"
                     autoFocus
                 />
@@ -131,7 +131,7 @@ export function QuickAdd({ onTaskAdded, defaultFunnel = 'backlog' }: QuickAddPro
                                     )}
                                 >
                                     <Clock size={14} className="sm:w-4 sm:h-4" />
-                                    {date ? format(date, "MMM d") : "Sin fecha"}
+                                    {date ? format(date, "MMM d") : "No date"}
                                 </button>
                             </PopoverTrigger>
                             <PopoverContent className="w-fit p-0 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900" align="start">
@@ -139,7 +139,6 @@ export function QuickAdd({ onTaskAdded, defaultFunnel = 'backlog' }: QuickAddPro
                                     mode="single"
                                     selected={date}
                                     onSelect={setDate}
-                                    initialFocus
                                     className="p-3 w-[200px]"
                                 />
                             </PopoverContent>

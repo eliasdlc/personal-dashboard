@@ -1,6 +1,6 @@
-import { tasks, userStats } from "@/db/schema";
+import { tasks, userStats, users } from "@/db/schema";
 import { db } from "../../../../lib/db";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, isNull, and } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 import { createTask, updateTaskSchema } from "../../../../lib/validators";
 import { randomUUID } from "crypto";
@@ -18,11 +18,15 @@ export async function GET(request: NextRequest) {
     }
     const userId = (session?.user as any)?.id;
     try {
-        const userTasks = await db
-            .select()
-            .from(tasks)
-            .where(eq(tasks.userId, userId))
-            .orderBy(tasks.position, desc(tasks.createdAt));
+        const userTasks = await db.query.tasks.findMany({
+            where: eq(tasks.userId, userId),
+            orderBy: (tasks, { desc }) => [tasks.position, desc(tasks.createdAt)],
+            with: {
+                subtasks: {
+                    orderBy: (subtasks, { asc }) => [asc(subtasks.createdAt)],
+                },
+            },
+        });
 
         return NextResponse.json(userTasks);
     } catch (error) {
@@ -31,7 +35,7 @@ export async function GET(request: NextRequest) {
     }
 }
 
-import { users } from "@/db/schema"; // Add this import
+
 
 export async function POST(request: NextRequest) {
     const session = await auth();
@@ -87,6 +91,7 @@ export async function POST(request: NextRequest) {
             contextId: data.contextId || null,
             statusFunnel: data.statusFunnel,
             dueDate: data.dueDate ? new Date(data.dueDate) : null,
+            parentId: data.parentId || null,
             createdAt: new Date(),
         };
 
@@ -148,6 +153,8 @@ export async function PATCH(request: NextRequest) {
 
         // Gamification Logic: Check if completing task
         if (dataToUpdate.status === 'done' && currentTask.status !== 'done') {
+            // Set completedAt timestamp when marking as done
+            (dataToUpdate as any).completedAt = new Date();
             // Fetch user stats
             let stats = await db.select().from(userStats).where(eq(userStats.userId, userId)).then(res => res[0]);
 
@@ -192,6 +199,8 @@ export async function PATCH(request: NextRequest) {
 
             statsUpdate = { streak: newStreak, xp: newXp, leveledUp: false }; // Simplified for now
         } else if (dataToUpdate.status === 'todo' && currentTask.status === 'done') {
+            // Clear completedAt when undoing a task
+            (dataToUpdate as any).completedAt = null;
             let stats = await db.select().from(userStats).where(eq(userStats.userId, userId)).then(res => res[0]);
             if (stats) {
                 const newXp = Math.max(0, stats.xp - 10);
