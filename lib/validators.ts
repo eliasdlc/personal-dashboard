@@ -18,6 +18,7 @@ export const createTask = z.object({
   contextId: z.string().optional(),
   statusFunnel: z.enum(['backlog', 'weekly', 'today']).default('backlog'),
   position: z.number().optional(),
+  parentId: z.string().optional(),
 });
 
 export const updateTaskSchema = z.object({

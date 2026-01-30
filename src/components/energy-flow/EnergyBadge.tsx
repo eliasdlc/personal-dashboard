@@ -1,4 +1,4 @@
-import { Zap, Battery, BatteryMedium, BatteryLow } from "lucide-react";
+import { Zap, BatteryMedium } from "lucide-react";
 
 type EnergyLevel = "high_focus" | "low_energy";
 

@@ -5,6 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { DndContext, DragOverlay, useDroppable, DragEndEvent, DragStartEvent, useSensor, useSensors, MouseSensor, TouchSensor } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
 import { useState } from "react";
+import { Archive, Calendar, Sun } from "lucide-react";
 
 interface PlanningViewProps {
     tasks: Task[];
@@ -14,12 +15,15 @@ interface PlanningViewProps {
     onDelete: (taskId: string) => void;
     onReorder: (tasksToUpdate: { id: string, position: number }[]) => void;
     onEdit: (task: Task) => void;
+    onToggleSubtask?: (subtask: any) => void;
+    onDeleteSubtask?: (subtaskId: string) => void;
 }
 
-export function PlanningView({ tasks, onMoveToToday, onMoveToWeekly, onMoveToBacklog, onDelete, onReorder, onEdit }: PlanningViewProps) {
-    const backlogTasks = tasks.filter(t => t.statusFunnel === 'backlog' || !t.statusFunnel);
-    const weeklyTasks = tasks.filter(t => t.statusFunnel === 'weekly');
-    const todayTasks = tasks.filter(t => t.statusFunnel === 'today');
+export function PlanningView({ tasks, onMoveToToday, onMoveToWeekly, onMoveToBacklog, onDelete, onReorder, onEdit, onToggleSubtask, onDeleteSubtask }: PlanningViewProps) {
+    // Filter tasks for each column - EXCLUDING subtasks (tasks with parentId)
+    const backlogTasks = tasks.filter(t => (t.statusFunnel === 'backlog' || !t.statusFunnel) && !t.parentId);
+    const weeklyTasks = tasks.filter(t => t.statusFunnel === 'weekly' && t.status !== 'done' && !t.parentId);
+    const todayTasks = tasks.filter(t => t.statusFunnel === 'today' && t.status !== 'done' && !t.parentId);
     const [activeId, setActiveId] = useState<string | null>(null);
 
     const sensors = useSensors(
@@ -112,12 +116,17 @@ export function PlanningView({ tasks, onMoveToToday, onMoveToWeekly, onMoveToBac
                     title="Backlog"
                     count={backlogTasks.length}
                     tasks={backlogTasks}
+                    allTasks={tasks}
                     onDelete={onDelete}
                     onEdit={onEdit}
+                    onToggleSubtask={onToggleSubtask}
+                    onDeleteSubtask={onDeleteSubtask}
                     columnClass="min-w-[280px] w-full md:w-80 bg-slate-50/50 dark:bg-slate-900/20 border-slate-200/50 dark:border-slate-800/50"
                     headerClass="text-slate-500 dark:text-slate-400"
                     badgeClass="bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
                     cardClass="hover:border-slate-300 dark:hover:border-slate-600"
+                    emptyIcon={<Archive size={24} />}
+                    emptyText="Empty backlog"
                 />
 
                 {/* Weekly Column */}
@@ -126,11 +135,16 @@ export function PlanningView({ tasks, onMoveToToday, onMoveToWeekly, onMoveToBac
                     title="This Week"
                     count={weeklyTasks.length}
                     tasks={weeklyTasks}
+                    allTasks={tasks}
                     onDelete={onDelete}
                     onEdit={onEdit}
+                    onToggleSubtask={onToggleSubtask}
+                    onDeleteSubtask={onDeleteSubtask}
                     columnClass="min-w-[280px] w-full md:w-80 bg-purple-50/30 dark:bg-purple-900/10 border-purple-100/50 dark:border-purple-500/10"
                     headerClass="text-purple-600 dark:text-purple-400"
                     badgeClass="bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300"
+                    emptyIcon={<Calendar size={24} />}
+                    emptyText="No tasks for this week"
                 />
 
                 {/* Today Bucket */}
@@ -139,12 +153,17 @@ export function PlanningView({ tasks, onMoveToToday, onMoveToWeekly, onMoveToBac
                     title="Today's Plan"
                     count={todayTasks.length}
                     tasks={todayTasks}
+                    allTasks={tasks}
                     onDelete={onDelete}
                     onEdit={onEdit}
+                    onToggleSubtask={onToggleSubtask}
+                    onDeleteSubtask={onDeleteSubtask}
                     columnClass="min-w-[280px] w-full md:w-80 shrink-0 bg-blue-50/50 dark:bg-blue-900/10 border-blue-100 dark:border-blue-500/20"
                     headerClass="text-blue-600 dark:text-blue-400"
                     badgeClass="bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300"
                     cardClass="border-blue-200 dark:border-blue-500/30 bg-white/80 dark:bg-slate-900/80 hover:border-blue-400 dark:hover:border-blue-400"
+                    emptyIcon={<Sun size={24} />}
+                    emptyText="No tasks for today"
                 />
             </div>
 
@@ -162,15 +181,20 @@ interface DroppableColumnProps {
     title: string;
     count: number;
     tasks: Task[];
+    allTasks?: Task[];
     onDelete: (id: string) => void;
     onEdit: (task: Task) => void;
+    onToggleSubtask?: (subtask: any) => void;
+    onDeleteSubtask?: (subtaskId: string) => void;
     columnClass: string;
     headerClass: string;
     badgeClass: string;
     cardClass?: string;
+    emptyIcon?: React.ReactNode;
+    emptyText?: string;
 }
 
-function DroppableColumn({ id, title, count, tasks, onDelete, onEdit, columnClass, headerClass, badgeClass, cardClass }: DroppableColumnProps) {
+function DroppableColumn({ id, title, count, tasks, allTasks, onDelete, onEdit, onToggleSubtask, onDeleteSubtask, columnClass, headerClass, badgeClass, cardClass, emptyIcon, emptyText }: DroppableColumnProps) {
     const { setNodeRef } = useDroppable({ id });
 
     return (
@@ -184,12 +208,27 @@ function DroppableColumn({ id, title, count, tasks, onDelete, onEdit, columnClas
                     <div className="space-y-3 pb-4 min-h-[100px]">
                         {tasks.map(task => (
                             <div key={task.id} className="relative group">
-                                <SortableTaskCard task={task} onDelete={onDelete} onEdit={onEdit} className={cardClass} />
+                                <SortableTaskCard
+                                    task={task}
+                                    allTasks={allTasks}
+                                    onDelete={onDelete}
+                                    onEdit={onEdit}
+                                    onToggleSubtask={onToggleSubtask}
+                                    onDeleteSubtask={onDeleteSubtask}
+                                    className={cardClass}
+                                />
                             </div>
                         ))}
                         {tasks.length === 0 && (
-                            <div className="text-center py-10 text-slate-400 dark:text-slate-500 text-sm border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
-                                Drop tasks here
+                            <div className="flex flex-col items-center justify-center py-10 text-center">
+                                {emptyIcon && (
+                                    <div className="mb-2 text-slate-300 dark:text-slate-600">
+                                        {emptyIcon}
+                                    </div>
+                                )}
+                                <p className="text-slate-400 dark:text-slate-500 text-sm">
+                                    {emptyText || "Drop tasks here"}
+                                </p>
                             </div>
                         )}
                     </div>

@@ -32,15 +32,15 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
     if (!isOpen) return null;
 
     return createPortal(
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+        <div className="fixed w-full inset-0 z-50 flex items-center justify-center p-1 sm:p-2">
             <div
                 className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity"
                 onClick={onClose}
                 aria-hidden="true"
             />
 
-            <div className="relative w-full max-w-lg transform rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 shadow-2xl transition-all scale-100 opacity-100">
-                <div className="flex items-center justify-between mb-5">
+            <div className="relative w-[95vw] md:w-[50vw] transform rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 shadow-2xl transition-all scale-100 opacity-100 max-h-[85vh] flex flex-col">
+                <div className="flex items-center justify-between mb-5 shrink-0">
                     {title && (
                         <h3 className="text-lg font-semibold leading-none tracking-tight text-slate-900 dark:text-slate-100">
                             {title}
@@ -55,7 +55,7 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
                     </button>
                 </div>
 
-                <div className="mt-2">
+                <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar">
                     {children}
                 </div>
             </div>

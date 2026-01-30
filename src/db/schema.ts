@@ -36,13 +36,20 @@ export const tasks = pgTable('tasks', {
   statusFunnel: varchar('status_funnel', { length: 20 }).default('backlog'),
   position: decimal('position', { precision: 10, scale: 2 }).default('0'),
   dueDate: timestamp('due_date', { withTimezone: true }),
+  completedAt: timestamp('completed_at', { withTimezone: true }),
+  parentId: text('parent_id'),
   createdAt: timestamp('created_at', { withTimezone: true })
     .defaultNow()
     .notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true })
     .defaultNow()
     .notNull(),
-});
+}, (table) => ({
+  parentTaskFk: foreignKey({
+    columns: [table.parentId],
+    foreignColumns: [table.id],
+  }).onDelete('set null'),
+}));
 
 
 // Notes
@@ -108,4 +115,35 @@ export const folders = pgTable('folders', {
     columns: [table.parentId],
     foreignColumns: [table.id],
   }).onDelete('cascade'),
+}));
+
+
+// Subtasks
+export const subtasks = pgTable('subtasks', {
+  id: text('id').primaryKey(),
+  taskId: text('task_id').notNull().references(() => tasks.id, { onDelete: 'cascade' }),
+  title: text('title').notNull(),
+  status: varchar('status', { length: 20 }).notNull().default('todo'),
+  createdAt: timestamp('created_at', { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  completedAt: timestamp('completed_at', { withTimezone: true }),
+});
+
+
+// Relations
+import { relations } from 'drizzle-orm';
+
+export const tasksRelations = relations(tasks, ({ many }) => ({
+  subtasks: many(subtasks),
+}));
+
+export const subtasksRelations = relations(subtasks, ({ one }) => ({
+  task: one(tasks, {
+    fields: [subtasks.taskId],
+    references: [tasks.id],
+  }),
 }));
