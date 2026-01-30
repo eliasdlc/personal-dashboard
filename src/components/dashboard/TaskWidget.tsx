@@ -23,6 +23,7 @@ export type Task = {
     position?: string | number | null;
     parentId?: string | null;
     subtasks?: Task[];
+    completedAt?: string | Date | null;
 };
 
 export function TaskWidget() {
