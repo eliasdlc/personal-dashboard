@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
 import { defaultCache } from "@serwist/next/worker";
-import { Serwist, type PrecacheEntry } from "serwist";
+import { Serwist, type PrecacheEntry, NetworkOnly } from "serwist";
 
 declare global {
     interface ServiceWorkerGlobalScope {
@@ -15,7 +15,17 @@ const serwist = new Serwist({
     skipWaiting: true,
     clientsClaim: true,
     navigationPreload: true,
-    runtimeCaching: defaultCache,
+    runtimeCaching: [
+        {
+            matcher: /\/api\/auth\/.*/,
+            handler: new NetworkOnly(),
+        },
+        {
+            matcher: /\/login/,
+            handler: new NetworkOnly(),
+        },
+        ...defaultCache,
+    ],
 });
 
 serwist.addEventListeners();
