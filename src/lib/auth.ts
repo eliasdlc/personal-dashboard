@@ -1,74 +1,71 @@
-import NextAuth, { NextAuthConfig } from 'next-auth';
-import GitHub from "next-auth/providers/github";
+import NextAuth from 'next-auth';
+import Google from "next-auth/providers/google";
+import Credentials from "next-auth/providers/credentials";
+import bcrypt from "bcryptjs";
+import { z } from "zod";
+import { eq } from "drizzle-orm";
+import { DrizzleAdapter } from "@auth/drizzle-adapter";
+import { db } from "./db";
+import { authConfig } from "./auth.config";
+import { accounts, sessions, users, verificationTokens } from "../db/schema";
 
 if (!process.env.AUTH_SECRET) {
     console.warn("Warning: AUTH_SECRET is not set. Authentication will likely fail.");
 }
-if (!process.env.AUTH_GITHUB_ID || !process.env.AUTH_GITHUB_SECRET) {
-    console.warn("Warning: AUTH_GITHUB_ID or AUTH_GITHUB_SECRET is not set.");
-}
 
-export const authConfig:
-    NextAuthConfig = {
+export const { handlers, auth, signIn, signOut } = NextAuth({
+    ...authConfig,
+    adapter: DrizzleAdapter(db, {
+        usersTable: users,
+        accountsTable: accounts,
+        sessionsTable: sessions,
+        verificationTokensTable: verificationTokens,
+    }),
+    session: {
+        strategy: "jwt",
+    },
     providers: [
-        GitHub({
-            clientId: process.env.AUTH_GITHUB_ID!,
-            clientSecret: process.env.AUTH_GITHUB_SECRET!,
+        Google({
+            clientId: process.env.AUTH_GOOGLE_ID,
+            clientSecret: process.env.AUTH_GOOGLE_SECRET,
+            allowDangerousEmailAccountLinking: true,
+        }),
+        Credentials({
+            credentials: {
+                email: {},
+                password: {},
+            },
+            authorize: async (credentials) => {
+                const parsedCredentials = z
+                    .object({ email: z.string().email(), password: z.string().min(6) })
+                    .safeParse(credentials);
+
+                if (parsedCredentials.success) {
+                    const { email, password } = parsedCredentials.data;
+                    const user = await db.query.users.findFirst({
+                        where: eq(users.email, email),
+                    });
+
+                    if (!user) return null;
+                    if (!user.password) return null;
+
+                    const passwordsMatch = await bcrypt.compare(password, user.password);
+
+                    if (passwordsMatch) return user;
+                }
+
+                console.log("Invalid credentials");
+                return null;
+            },
         }),
     ],
     callbacks: {
-        authorized({ auth, request: { nextUrl } }) {
-            // Development bypass: Always allow access in dev mode
-            if (process.env.NODE_ENV === 'development') return true;
-
-            const isLoggedIn = !!auth?.user;
-            const isOnDashboard = nextUrl.pathname === '/';
-            // console.log('Authorized callback:', { pathname: nextUrl.pathname, isLoggedIn, isOnDashboard });
-            if (isOnDashboard) {
-                if (isLoggedIn) return true;
-                // console.log('Redirecting to login');
-                return false; // Redirect unauthenticated users to login page
-            }
-            return true;
-        },
-        async jwt({ token, account, profile }) {
-            if (account && profile) {
-                // Use the stable GitHub ID as the user ID
-                token.sub = String(profile.id);
-                console.log('JWT Callback - Setting stable ID:', token.sub);
-            }
-            return token;
-        },
-        async session({ session, token }) {
-            console.log('Session Callback - Token:', token);
+        ...authConfig.callbacks,
+        session({ session, token }) {
             if (session.user && token.sub) {
-                (session.user as any).id = token.sub;
+                session.user.id = token.sub;
             }
-            console.log('Session Callback - Session User ID:', (session.user as any).id);
             return session;
         },
     },
-    pages: {
-        signIn: '/login',
-    },
-};
-
-const { auth: originalAuth, handlers, signIn, signOut } = NextAuth(authConfig);
-
-export { handlers, signIn, signOut };
-
-export const auth = async (...args: any[]) => {
-    // Mock session for development
-    if (process.env.NODE_ENV === 'development') {
-        return {
-            user: {
-                name: "Dev User",
-                email: "dev@example.com",
-                image: "", // Empty for now, or use a placeholder
-                id: "dev-user-mock-id"
-            },
-            expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-        } as any;
-    }
-    return (originalAuth as any)(...args);
-};
+});
