@@ -1,8 +1,5 @@
-
 'use client';
 
-
-import { quickExpenses } from "@/db/schema";
 import { useEffect, useState, useMemo } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -19,8 +16,8 @@ export type QuickExpense = {
     updatedAt: string;
 }
 
-export function QuickExpenseWidget() {
-    const [quickExpenses, setQuickExpense] = useState<QuickExpense[]>([]);
+export function QuickExpenseWidget({ initialExpenses = [] }: { initialExpenses?: QuickExpense[] }) {
+    const [quickExpenses, setQuickExpense] = useState<QuickExpense[]>(initialExpenses);
 
     const uniqeQuickExpenses = useMemo(() => {
         const seen = new Set();
@@ -35,7 +32,7 @@ export function QuickExpenseWidget() {
         return quickExpenses.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
     }, [quickExpenses]);
 
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [label, setLabel] = useState('');
     const [amount, setAmount] = useState('');
     const [category, setCategory] = useState('');
@@ -44,7 +41,7 @@ export function QuickExpenseWidget() {
 
     async function fetchQuickExpenses() {
         try {
-            setLoading(true);
+            // setLoading(true); // Background refresh
             const res = await fetch('/api/quick-expenses');
 
             if (!res.ok) throw new Error('Failed to load tasks');
@@ -63,9 +60,9 @@ export function QuickExpenseWidget() {
         }
     }
 
-    useEffect(() => {
-        fetchQuickExpenses();
-    }, []);
+    // useEffect(() => {
+    //     fetchQuickExpenses();
+    // }, []);
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();

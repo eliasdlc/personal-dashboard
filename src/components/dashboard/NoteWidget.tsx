@@ -37,9 +37,9 @@ export type Folder = {
     updatedAt: string;
 };
 
-export function NoteWidget() {
-    const [notes, setNotes] = useState<Note[]>([]);
-    const [folders, setFolders] = useState<Folder[]>([]);
+export function NoteWidget({ initialNotes = [], initialFolders = [] }: { initialNotes?: Note[], initialFolders?: Folder[] }) {
+    const [notes, setNotes] = useState<Note[]>(initialNotes);
+    const [folders, setFolders] = useState<Folder[]>(initialFolders);
 
     // Navigation State
     const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
@@ -80,7 +80,7 @@ export function NoteWidget() {
         });
     }, [notes, currentFolderId]);
 
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false); // No longer loading initially
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [submitting, setSubmitting] = useState(false);
@@ -156,18 +156,18 @@ export function NoteWidget() {
         }
     }
 
-    async function initialize() {
-        setLoading(true);
-        try {
-            await Promise.all([fetchNotes(), fetchFolders()]);
-        } finally {
-            setLoading(false);
-        }
-    }
+    // async function initialize() {
+    //     setLoading(true);
+    //     try {
+    //         await Promise.all([fetchNotes(), fetchFolders()]);
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    // }
 
-    useEffect(() => {
-        initialize();
-    }, []);
+    // useEffect(() => {
+    //     initialize();
+    // }, []);
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
@@ -798,13 +798,10 @@ export function NoteWidget() {
                             {/* Simplified preview */}
                             <div className="text-emerald-500 mb-2"><StickyNote size={16} /></div>
                             <div className="h-2 w-full bg-slate-200 dark:bg-slate-800 rounded mb-2" />
-                            <div className="h-2 w-3/4 bg-slate-200 dark:bg-slate-800 rounded" />
                         </div>
                     ) : null}
                 </DragOverlay>
-
-            </div >
+            </div>
         </DndContext>
     );
-
 }

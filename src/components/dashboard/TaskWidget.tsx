@@ -26,9 +26,9 @@ export type Task = {
     completedAt?: string | Date | null;
 };
 
-export function TaskWidget() {
+export function TaskWidget({ initialTasks = [] }: { initialTasks?: Task[] }) {
 
-    const [tasks, setTasks] = useState<Task[]>([]);
+    const [tasks, setTasks] = useState<Task[]>(initialTasks);
 
     // Ensure uniqueness and filter out subtasks (show only top-level)
     const topLevelTasks = useMemo(() => {
@@ -44,7 +44,7 @@ export function TaskWidget() {
         });
     }, [tasks]);
 
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [submitting, setSubmitting] = useState(false);
@@ -52,7 +52,7 @@ export function TaskWidget() {
 
     async function fetchTasks() {
         try {
-            setLoading(true);
+            // setLoading(true); // Don't block UI for background refresh
             const res = await fetch('/api/tasks');
 
             if (!res.ok) throw new Error('Failed to load tasks');
@@ -73,9 +73,9 @@ export function TaskWidget() {
         }
     }
 
-    useEffect(() => {
-        fetchTasks();
-    }, []);
+    // useEffect(() => {
+    //     fetchTasks();
+    // }, []);
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
@@ -208,18 +208,20 @@ export function TaskWidget() {
                         <p className="text-sm">No tasks yet</p>
                     </div>
                 ) : (
-                    topLevelTasks.map((task) => (
-                        <TaskCard
-                            key={task.id}
-                            task={task}
-                            onToggle={toggleDone}
-                            onDelete={deleteTask}
-                            onToggleSubtask={toggleDone} // Reuse toggle logic for subtasks
-                            className="bg-white dark:bg-slate-900/50 shadow-sm border-slate-200 dark:border-slate-800/80"
-                            showEnergy={true}
-                            showContext={true}
-                        />
-                    ))
+                    <div className="space-y-3">
+                        {topLevelTasks.map((task) => (
+                            <TaskCard
+                                key={task.id}
+                                task={task}
+                                onToggle={toggleDone}
+                                onDelete={deleteTask}
+                                onToggleSubtask={toggleDone} // Reuse toggle logic for subtasks
+                                className="bg-white dark:bg-slate-900/50 shadow-sm border-slate-200 dark:border-slate-800/80"
+                                showEnergy={true}
+                                showContext={true}
+                            />
+                        ))}
+                    </div>
                 )}
             </div>
 
@@ -245,5 +247,3 @@ export function TaskWidget() {
         </div>
     );
 }
-
-
