@@ -16,6 +16,7 @@ if (!process.env.AUTH_SECRET) {
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
     ...authConfig,
+    debug: process.env.NODE_ENV === "development",
     adapter: DrizzleAdapter(db, {
         usersTable: users,
         accountsTable: accounts,
