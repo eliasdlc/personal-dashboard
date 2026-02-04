@@ -1,4 +1,5 @@
 import { signIn } from '@/lib/auth';
+import { socialLogin } from '@/actions/auth';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import dashboardImage from '@/assets/images/personal_dashboard.png';
@@ -18,7 +19,7 @@ export default function LoginPage() {
                             <form
                                 action={async () => {
                                     'use server';
-                                    await signIn('github', { redirectTo: '/' });
+                                    await socialLogin('github');
                                 }}
                                 className="space-y-4"
                             >
@@ -33,7 +34,7 @@ export default function LoginPage() {
                             <form
                                 action={async () => {
                                     'use server';
-                                    await signIn('google', { redirectTo: '/' });
+                                    await socialLogin('google');
                                 }}
                                 className="space-y-4"
                             >

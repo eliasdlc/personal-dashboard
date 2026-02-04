@@ -4,6 +4,7 @@ import { LayoutDashboard, User, LogOut } from 'lucide-react';
 import { GamificationStats } from '../gamification/GamificationStats';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '../ui/button';
+import { serverLogout } from '@/actions/auth';
 
 interface MobileHeaderProps {
     user?: {
@@ -44,7 +45,7 @@ export function MobileHeader({ user }: MobileHeaderProps) {
                             <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{user?.name}</p>
                             <p className="text-xs text-slate-500 truncate">{user?.email}</p>
                         </div>
-                        <form action="/api/auth/signout" method="POST">
+                        <form action={serverLogout}>
                             <Button
                                 type="submit"
                                 variant="ghost"
