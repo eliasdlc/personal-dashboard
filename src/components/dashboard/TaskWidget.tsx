@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { useEffect, useState, useMemo } from "react";
 import { Plus, ListTodo } from "lucide-react";
 import { TaskCard } from "../energy-flow/TaskCard";
+import { AnimatedList, AnimatedListItem } from "@/components/ui/animations";
 
 
 export type Task = {
@@ -208,20 +209,21 @@ export function TaskWidget({ initialTasks = [] }: { initialTasks?: Task[] }) {
                         <p className="text-sm">No tasks yet</p>
                     </div>
                 ) : (
-                    <div className="space-y-3">
+                    <AnimatedList className="space-y-3">
                         {topLevelTasks.map((task) => (
-                            <TaskCard
-                                key={task.id}
-                                task={task}
-                                onToggle={toggleDone}
-                                onDelete={deleteTask}
-                                onToggleSubtask={toggleDone} // Reuse toggle logic for subtasks
-                                className="bg-white dark:bg-slate-900/50 shadow-sm border-slate-200 dark:border-slate-800/80"
-                                showEnergy={true}
-                                showContext={true}
-                            />
+                            <AnimatedListItem key={task.id}>
+                                <TaskCard
+                                    task={task}
+                                    onToggle={toggleDone}
+                                    onDelete={deleteTask}
+                                    onToggleSubtask={toggleDone} // Reuse toggle logic for subtasks
+                                    className="bg-white dark:bg-slate-900/50 shadow-sm border-slate-200 dark:border-slate-800/80"
+                                    showEnergy={true}
+                                    showContext={true}
+                                />
+                            </AnimatedListItem>
                         ))}
-                    </div>
+                    </AnimatedList>
                 )}
             </div>
 

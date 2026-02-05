@@ -5,6 +5,7 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Trash2, Plus, DollarSign, Wallet, Receipt } from "lucide-react";
+import { AnimatedList, AnimatedListItem } from "@/components/ui/animations";
 
 export type QuickExpense = {
     id: string;
@@ -151,9 +152,9 @@ export function QuickExpenseWidget({ initialExpenses = [] }: { initialExpenses?:
                         <p className="text-sm">No expenses yet</p>
                     </div>
                 ) : (
-                    <div className="space-y-2">
+                    <AnimatedList className="space-y-2">
                         {quickExpenses.map((item) => (
-                            <div key={item.id} className="group/item flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-700/50">
+                            <AnimatedListItem key={item.id} className="group/item flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-700/50">
                                 <div className="flex items-center gap-3 min-w-0">
                                     <div className="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800/50 flex items-center justify-center text-slate-500 dark:text-slate-400 shrink-0 border border-slate-200 dark:border-slate-700/50">
                                         <DollarSign size={16} />
@@ -173,9 +174,9 @@ export function QuickExpenseWidget({ initialExpenses = [] }: { initialExpenses?:
                                         <Trash2 size={15} />
                                     </button>
                                 </div>
-                            </div>
+                            </AnimatedListItem>
                         ))}
-                    </div>
+                    </AnimatedList>
                 )}
             </div>
 

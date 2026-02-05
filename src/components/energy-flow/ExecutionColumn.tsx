@@ -7,6 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Zap, Coffee } from "lucide-react";
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { StaggerContainer } from "@/components/ui/animations";
 
 interface ExecutionColumnProps {
     id: string;
@@ -72,7 +73,7 @@ export function ExecutionColumn({
 
             <ScrollArea className="flex-1 -mr-3 pr-3">
                 <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
-                    <div className="space-y-3 pb-4 min-h-[100px]">
+                    <StaggerContainer className="space-y-3 pb-4 min-h-[100px]">
                         {tasks.map(task => (
                             <SortableTaskCard
                                 key={task.id}
@@ -100,7 +101,7 @@ export function ExecutionColumn({
                                 </p>
                             </div>
                         )}
-                    </div>
+                    </StaggerContainer>
                 </SortableContext>
             </ScrollArea>
         </div>

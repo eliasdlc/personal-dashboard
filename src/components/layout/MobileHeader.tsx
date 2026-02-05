@@ -16,7 +16,7 @@ interface MobileHeaderProps {
 
 export function MobileHeader({ user }: MobileHeaderProps) {
     return (
-        <header className="md:hidden flex w-full h-14 bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800/50 items-center justify-between px-4 shrink-0">
+        <header className="md:hidden flex w-full h-14 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50 items-center justify-between px-4 shrink-0 sticky top-0 z-50">
             {/* Left: Logo */}
             <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-900/20">

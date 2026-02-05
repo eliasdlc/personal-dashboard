@@ -1,11 +1,12 @@
 import { Skeleton } from "../../components/ui/skeleton";
+import { PageTransition, StaggerContainer, StaggerItem } from '@/components/ui/animations';
 
 export default function DashboardLoading() {
     return (
-        <div className="p-4 flex flex-col h-auto md:h-full overflow-auto md:overflow-hidden pb-20 md:pb-0">
-            <div className="grid w-full gap-4 md:grid-cols-3 flex-1 min-h-0">
+        <PageTransition className="p-4 flex flex-col h-auto md:h-full overflow-auto md:overflow-hidden pb-20 md:pb-0">
+            <StaggerContainer className="grid w-full gap-4 md:grid-cols-3 flex-1 min-h-0">
                 {/* Task Widget Skeleton */}
-                <div className="h-[600px] md:h-full min-h-0 rounded-2xl border border-slate-200 dark:border-slate-800/60 bg-white dark:bg-slate-950 overflow-hidden relative shadow-xl">
+                <StaggerItem className="h-[500px] md:h-full min-h-0 rounded-2xl border border-slate-200 dark:border-slate-800/60 bg-white dark:bg-slate-950 overflow-hidden relative shadow-xl">
                     <div className="p-5 border-b border-slate-200 dark:border-slate-800/60 flex justify-between items-center bg-slate-50/80 dark:bg-slate-900/40">
                         <Skeleton className="h-8 w-32" />
                         <Skeleton className="h-6 w-12 rounded-full" />
@@ -15,10 +16,10 @@ export default function DashboardLoading() {
                             <Skeleton key={i} className="h-24 w-full rounded-xl" />
                         ))}
                     </div>
-                </div>
+                </StaggerItem>
 
                 {/* Note Widget Skeleton */}
-                <div className="h-[600px] md:h-full min-h-0 rounded-2xl border border-slate-200 dark:border-slate-800/60 bg-white dark:bg-slate-950 overflow-hidden relative shadow-xl">
+                <StaggerItem className="h-[500px] md:h-full min-h-0 rounded-2xl border border-slate-200 dark:border-slate-800/60 bg-white dark:bg-slate-950 overflow-hidden relative shadow-xl">
                     <div className="p-5 border-b border-slate-200 dark:border-slate-800/60 flex justify-between items-center bg-slate-50/80 dark:bg-slate-900/40">
                         <div className="flex gap-3 items-center">
                             <Skeleton className="h-8 w-8 rounded-lg" />
@@ -33,10 +34,10 @@ export default function DashboardLoading() {
                             <Skeleton key={i} className="h-32 w-full rounded-xl" />
                         ))}
                     </div>
-                </div>
+                </StaggerItem>
 
                 {/* Expenses Widget Skeleton */}
-                <div className="h-[600px] md:h-full min-h-0 rounded-2xl border border-slate-200 dark:border-slate-800/60 bg-white dark:bg-slate-950 overflow-hidden relative shadow-xl">
+                <StaggerItem className="h-[500px] md:h-full min-h-0 rounded-2xl border border-slate-200 dark:border-slate-800/60 bg-white dark:bg-slate-950 overflow-hidden relative shadow-xl">
                     <div className="p-5 border-b border-slate-200 dark:border-slate-800/60 bg-slate-50/80 dark:bg-slate-900/40">
                         <Skeleton className="h-8 w-40 mb-2" />
                         <Skeleton className="h-4 w-60" />
@@ -49,8 +50,8 @@ export default function DashboardLoading() {
                             ))}
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
+                </StaggerItem>
+            </StaggerContainer>
+        </PageTransition>
     );
 }

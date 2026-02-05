@@ -13,6 +13,7 @@ import { FolderCard } from "../notes/FolderCard";
 import { NoteCard } from "../notes/NoteCard";
 import { DndContext, DragEndEvent, useSensor, useSensors, PointerSensor, MouseSensor, TouchSensor, DragOverlay } from "@dnd-kit/core";
 import { SortableContext, rectSortingStrategy, arrayMove } from "@dnd-kit/sortable";
+import { AnimatedList, AnimatedListItem } from "@/components/ui/animations";
 
 export type Note = {
     id: string,
@@ -705,20 +706,21 @@ export function NoteWidget({ initialNotes = [], initialFolders = [] }: { initial
                                         <p className="text-sm">No notes here.</p>
                                     </div>
                                 ) : (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                                    <AnimatedList className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                                         {sortedNotes.map((note) => (
-                                            <NoteCard
-                                                key={note.id}
-                                                note={note}
-                                                onClick={() => openEditModal(note)}
-                                                onPin={togglePin}
-                                                onDelete={deleteNote}
-                                                isSelecting={isSelecting}
-                                                isSelected={selectedNotes.has(note.id)}
-                                                onToggleSelect={() => toggleNoteSelection(note.id)}
-                                            />
+                                            <AnimatedListItem key={note.id}>
+                                                <NoteCard
+                                                    note={note}
+                                                    onClick={() => openEditModal(note)}
+                                                    onPin={togglePin}
+                                                    onDelete={deleteNote}
+                                                    isSelecting={isSelecting}
+                                                    isSelected={selectedNotes.has(note.id)}
+                                                    onToggleSelect={() => toggleNoteSelection(note.id)}
+                                                />
+                                            </AnimatedListItem>
                                         ))}
-                                    </div>
+                                    </AnimatedList>
                                 )}
                             </div>
                         </div>
