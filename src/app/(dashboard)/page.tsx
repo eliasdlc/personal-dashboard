@@ -38,7 +38,19 @@ export default async function DashboardPage() {
           <TaskWidget initialTasks={userTasks as any} />
         </StaggerItem>
         <StaggerItem className="h-[500px] md:h-full min-h-0">
-          <NoteWidget initialNotes={userNotes} initialFolders={userFolders} />
+          <NoteWidget
+            initialNotes={userNotes.map(n => ({
+              ...n,
+              createdAt: n.createdAt.toISOString(),
+              updatedAt: n.updatedAt.toISOString(),
+              title: n.title ?? undefined
+            }))}
+            initialFolders={userFolders.map(f => ({
+              ...f,
+              createdAt: f.createdAt.toISOString(),
+              updatedAt: f.updatedAt.toISOString()
+            }))}
+          />
         </StaggerItem>
         <StaggerItem className="h-[500px] md:h-full min-h-0">
           <QuickExpenseWidget initialExpenses={userExpenses as any} />
