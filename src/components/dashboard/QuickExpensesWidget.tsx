@@ -1,13 +1,11 @@
-
 'use client';
 
-
-import { quickExpenses } from "@/db/schema";
 import { useEffect, useState, useMemo } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Trash2, Plus, DollarSign, Wallet, Receipt } from "lucide-react";
+import { AnimatedList, AnimatedListItem } from "@/components/ui/animations";
 
 export type QuickExpense = {
     id: string;
@@ -19,8 +17,8 @@ export type QuickExpense = {
     updatedAt: string;
 }
 
-export function QuickExpenseWidget() {
-    const [quickExpenses, setQuickExpense] = useState<QuickExpense[]>([]);
+export function QuickExpenseWidget({ initialExpenses = [] }: { initialExpenses?: QuickExpense[] }) {
+    const [quickExpenses, setQuickExpense] = useState<QuickExpense[]>(initialExpenses);
 
     const uniqeQuickExpenses = useMemo(() => {
         const seen = new Set();
@@ -35,7 +33,7 @@ export function QuickExpenseWidget() {
         return quickExpenses.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
     }, [quickExpenses]);
 
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [label, setLabel] = useState('');
     const [amount, setAmount] = useState('');
     const [category, setCategory] = useState('');
@@ -44,7 +42,7 @@ export function QuickExpenseWidget() {
 
     async function fetchQuickExpenses() {
         try {
-            setLoading(true);
+            // setLoading(true); // Background refresh
             const res = await fetch('/api/quick-expenses');
 
             if (!res.ok) throw new Error('Failed to load tasks');
@@ -63,9 +61,9 @@ export function QuickExpenseWidget() {
         }
     }
 
-    useEffect(() => {
-        fetchQuickExpenses();
-    }, []);
+    // useEffect(() => {
+    //     fetchQuickExpenses();
+    // }, []);
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
@@ -154,9 +152,9 @@ export function QuickExpenseWidget() {
                         <p className="text-sm">No expenses yet</p>
                     </div>
                 ) : (
-                    <div className="space-y-2">
+                    <AnimatedList className="space-y-2">
                         {quickExpenses.map((item) => (
-                            <div key={item.id} className="group/item flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-700/50">
+                            <AnimatedListItem key={item.id} className="group/item flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-700/50">
                                 <div className="flex items-center gap-3 min-w-0">
                                     <div className="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800/50 flex items-center justify-center text-slate-500 dark:text-slate-400 shrink-0 border border-slate-200 dark:border-slate-700/50">
                                         <DollarSign size={16} />
@@ -176,9 +174,9 @@ export function QuickExpenseWidget() {
                                         <Trash2 size={15} />
                                     </button>
                                 </div>
-                            </div>
+                            </AnimatedListItem>
                         ))}
-                    </div>
+                    </AnimatedList>
                 )}
             </div>
 

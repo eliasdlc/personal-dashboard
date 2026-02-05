@@ -12,6 +12,7 @@ import { QuickAdd } from "./QuickAdd";
 import { Modal } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { motion, AnimatePresence } from "framer-motion";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
@@ -21,6 +22,7 @@ import { ArchiveView } from "./ArchiveView";
 import { SubtaskList } from "./SubtaskList";
 import { CONTEXT_LIST } from "@/lib/contexts";
 import { EditTaskMobileView } from "./EditTaskMobileView";
+import { EnergyFlowSkeleton } from "@/components/ui/skeletons";
 
 export function EnergyFlowModule() {
     const { playCompletionSound } = useCompletionSound();
@@ -458,19 +460,29 @@ export function EnergyFlowModule() {
             </div>
 
             {/* Quick Add Section */}
-            {showQuickAdd && (
-                <div className="p-4 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800 animate-in slide-in-from-top-2">
-                    <QuickAdd
-                        onTaskAdded={() => { fetchTasks(); setShowQuickAdd(false); }}
-                        defaultFunnel={mode === 'execution' ? 'today' : 'backlog'}
-                    />
-                </div>
-            )}
+            <AnimatePresence>
+                {showQuickAdd && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3, ease: "easeInOut" }}
+                        className="overflow-hidden border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50"
+                    >
+                        <div className="p-4">
+                            <QuickAdd
+                                onTaskAdded={() => { fetchTasks(); setShowQuickAdd(false); }}
+                                defaultFunnel={mode === 'execution' ? 'today' : 'backlog'}
+                            />
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* Content */}
             <div className="flex-1 overflow-y-auto md:overflow-hidden p-4 md:p-6 bg-slate-50/30 dark:bg-slate-900/20">
                 {loading ? (
-                    <div className="flex items-center justify-center h-full text-slate-400">Loading...</div>
+                    <EnergyFlowSkeleton />
                 ) : mode === 'planning' ? (
                     <PlanningView
                         tasks={tasks}

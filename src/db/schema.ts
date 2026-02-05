@@ -9,6 +9,7 @@ import {
   integer,
   foreignKey,
   primaryKey,
+  index,
 } from 'drizzle-orm/pg-core';
 import type { AdapterAccount } from 'next-auth/adapters';
 
@@ -99,6 +100,9 @@ export const tasks = pgTable('tasks', {
     columns: [table.parentId],
     foreignColumns: [table.id],
   }).onDelete('set null'),
+  userIdIdx: index('tasks_user_id_idx').on(table.userId),
+  statusIdx: index('tasks_status_idx').on(table.status),
+  dueDateIdx: index('tasks_due_date_idx').on(table.dueDate),
 }));
 
 
@@ -116,7 +120,10 @@ export const notes = pgTable('notes', {
   updatedAt: timestamp('updated_at', { withTimezone: true })
     .defaultNow()
     .notNull(),
-});
+}, (table) => ({
+  userIdIdx: index('notes_user_id_idx').on(table.userId),
+  folderIdIdx: index('notes_folder_id_idx').on(table.folderId),
+}));
 
 // Quick Expenses
 export const quickExpenses = pgTable('quick_expenses', {
@@ -131,7 +138,9 @@ export const quickExpenses = pgTable('quick_expenses', {
   updatedAt: timestamp('updated_at', { withTimezone: true })
     .defaultNow()
     .notNull(),
-});
+}, (table) => ({
+  userIdIdx: index('expenses_user_id_idx').on(table.userId),
+}));
 
 
 // User Stats (Gamification)
@@ -165,6 +174,8 @@ export const folders = pgTable('folders', {
     columns: [table.parentId],
     foreignColumns: [table.id],
   }).onDelete('cascade'),
+  userIdIdx: index('folders_user_id_idx').on(table.userId),
+  parentIdIdx: index('folders_parent_id_idx').on(table.parentId),
 }));
 
 
@@ -181,7 +192,9 @@ export const subtasks = pgTable('subtasks', {
     .defaultNow()
     .notNull(),
   completedAt: timestamp('completed_at', { withTimezone: true }),
-});
+}, (table) => ({
+  taskIdIdx: index('subtasks_task_id_idx').on(table.taskId),
+}));
 
 
 // Relations

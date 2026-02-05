@@ -6,8 +6,10 @@ import { ContextTag } from "./ContextTag";
 import { SubtaskList } from "./SubtaskList";
 import { Clock, Check, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { isToday, isTomorrow, isYesterday, isBefore, format, differenceInDays } from "date-fns";
+import { motion, AnimatePresence } from "framer-motion";
+// Confetti removed per user request
 
 interface TaskCardProps {
     task: Task & {
@@ -90,18 +92,45 @@ export function TaskCard({ task, allTasks = [], onToggle, onDelete, onEdit, onTo
         cardStyle = "bg-emerald-50/50 border-emerald-200 dark:bg-emerald-900/10 dark:border-emerald-500/20 hover:border-emerald-300";
     }
 
+    const [isExiting, setIsExiting] = useState(false);
+
+    // Handler with delay for visual feedback
+    const handleToggle = (t: Task) => {
+        // Should we delay? The strikethrough needs to be seen.
+        // If we don't delay, the optimistic update in parent might move it or re-render it instantly.
+        // Let's rely on the fact that isDone will flip, and the component stays mounted. 
+        // But if we want to ensure the "pop" happens first:
+        onToggle?.(t);
+    };
+
+    const handleDelete = (id: string) => {
+        setIsExiting(true);
+        // Wait for exit animation (approx 300ms) before actual delete
+        setTimeout(() => {
+            onDelete?.(id);
+        }, 300);
+    };
+
     return (
         <div className={cn(
             "group flex flex-col p-3 rounded-xl border transition-all shadow-sm",
             cardStyle,
-            className
+            className,
+            isExiting && "opacity-0 scale-95 pointer-events-none duration-300" // Manual exit style
         )}>
             <div className="flex items-start gap-3">
-                <button
-                    onClick={() => onToggle?.(task)}
+                <motion.button
+                    whileTap={{ scale: 0.8 }}
+                    animate={{ scale: isDone ? [1, 1.2, 1] : 1 }}
+                    transition={{ duration: 0.3 }}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        // No confetti
+                        handleToggle(task);
+                    }}
                     onPointerDown={(e) => e.stopPropagation()}
                     className={cn(
-                        "mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all shrink-0 cursor-pointer",
+                        "mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors shrink-0 cursor-pointer",
                         isDone ? "bg-blue-600 border-blue-600 text-white" :
                             isUrgent ? "border-red-400 dark:border-red-500 hover:border-red-600 text-transparent" :
                                 task.energyLevel === 'high_focus' ? "border-amber-300 dark:border-amber-600 hover:border-amber-500 text-transparent" :
@@ -109,22 +138,41 @@ export function TaskCard({ task, allTasks = [], onToggle, onDelete, onEdit, onTo
                                         "border-slate-300 dark:border-slate-600 hover:border-blue-500 text-transparent"
                     )}
                 >
-                    <Check size={12} strokeWidth={3} />
-                </button>
+                    <motion.div
+                        initial={false}
+                        animate={{ scale: isDone ? 1 : 0 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                    >
+                        <Check size={12} strokeWidth={3} />
+                    </motion.div>
+                </motion.button>
 
                 <div className="flex-1 min-w-0 cursor-pointer" onClick={() => onEdit?.(task)}>
                     <div className="flex items-start justify-between gap-2">
-                        <p className={`text-sm font-medium break-words ${isDone ? 'text-slate-400 line-through' : 'text-slate-700 dark:text-slate-200'}`}>
-                            {task.title}
-                        </p>
+                        <div className="relative">
+                            <p className={cn(
+                                "text-sm font-medium break-words transition-colors duration-300",
+                                isDone ? "text-slate-400" : "text-slate-700 dark:text-slate-200"
+                            )}>
+                                {task.title}
+                            </p>
+                            {/* Strikethrough Animation */}
+                            <motion.div
+                                initial={false}
+                                animate={{ width: isDone ? "100%" : "0%" }}
+                                transition={{ duration: 0.3, ease: "easeInOut" }}
+                                className="absolute top-1/2 left-0 h-0.5 bg-slate-400 pointer-events-none mt-[1px]"
+                            />
+                        </div>
                         {onDelete && (
-                            <button
-                                onClick={(e) => { e.stopPropagation(); onDelete(task.id); }}
+                            <motion.button
+                                whileTap={{ scale: 0.9, color: "#EF4444" }}
+                                onClick={(e) => { e.stopPropagation(); handleDelete(task.id); }}
                                 onPointerDown={(e) => e.stopPropagation()}
-                                className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 text-slate-400 hover:text-red-500 transition-opacity"
+                                className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 text-slate-400 hover:text-red-500 transition-all"
                             >
                                 <Trash2 size={14} />
-                            </button>
+                            </motion.button>
                         )}
                     </div>
 

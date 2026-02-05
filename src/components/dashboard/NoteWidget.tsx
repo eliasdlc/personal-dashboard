@@ -13,6 +13,7 @@ import { FolderCard } from "../notes/FolderCard";
 import { NoteCard } from "../notes/NoteCard";
 import { DndContext, DragEndEvent, useSensor, useSensors, PointerSensor, MouseSensor, TouchSensor, DragOverlay } from "@dnd-kit/core";
 import { SortableContext, rectSortingStrategy, arrayMove } from "@dnd-kit/sortable";
+import { AnimatedList, AnimatedListItem } from "@/components/ui/animations";
 
 export type Note = {
     id: string,
@@ -37,9 +38,9 @@ export type Folder = {
     updatedAt: string;
 };
 
-export function NoteWidget() {
-    const [notes, setNotes] = useState<Note[]>([]);
-    const [folders, setFolders] = useState<Folder[]>([]);
+export function NoteWidget({ initialNotes = [], initialFolders = [] }: { initialNotes?: Note[], initialFolders?: Folder[] }) {
+    const [notes, setNotes] = useState<Note[]>(initialNotes);
+    const [folders, setFolders] = useState<Folder[]>(initialFolders);
 
     // Navigation State
     const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
@@ -80,7 +81,7 @@ export function NoteWidget() {
         });
     }, [notes, currentFolderId]);
 
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false); // No longer loading initially
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [submitting, setSubmitting] = useState(false);
@@ -156,18 +157,18 @@ export function NoteWidget() {
         }
     }
 
-    async function initialize() {
-        setLoading(true);
-        try {
-            await Promise.all([fetchNotes(), fetchFolders()]);
-        } finally {
-            setLoading(false);
-        }
-    }
+    // async function initialize() {
+    //     setLoading(true);
+    //     try {
+    //         await Promise.all([fetchNotes(), fetchFolders()]);
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    // }
 
-    useEffect(() => {
-        initialize();
-    }, []);
+    // useEffect(() => {
+    //     initialize();
+    // }, []);
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
@@ -705,20 +706,21 @@ export function NoteWidget() {
                                         <p className="text-sm">No notes here.</p>
                                     </div>
                                 ) : (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                                    <AnimatedList className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                                         {sortedNotes.map((note) => (
-                                            <NoteCard
-                                                key={note.id}
-                                                note={note}
-                                                onClick={() => openEditModal(note)}
-                                                onPin={togglePin}
-                                                onDelete={deleteNote}
-                                                isSelecting={isSelecting}
-                                                isSelected={selectedNotes.has(note.id)}
-                                                onToggleSelect={() => toggleNoteSelection(note.id)}
-                                            />
+                                            <AnimatedListItem key={note.id}>
+                                                <NoteCard
+                                                    note={note}
+                                                    onClick={() => openEditModal(note)}
+                                                    onPin={togglePin}
+                                                    onDelete={deleteNote}
+                                                    isSelecting={isSelecting}
+                                                    isSelected={selectedNotes.has(note.id)}
+                                                    onToggleSelect={() => toggleNoteSelection(note.id)}
+                                                />
+                                            </AnimatedListItem>
                                         ))}
-                                    </div>
+                                    </AnimatedList>
                                 )}
                             </div>
                         </div>
@@ -798,13 +800,10 @@ export function NoteWidget() {
                             {/* Simplified preview */}
                             <div className="text-emerald-500 mb-2"><StickyNote size={16} /></div>
                             <div className="h-2 w-full bg-slate-200 dark:bg-slate-800 rounded mb-2" />
-                            <div className="h-2 w-3/4 bg-slate-200 dark:bg-slate-800 rounded" />
                         </div>
                     ) : null}
                 </DragOverlay>
-
-            </div >
+            </div>
         </DndContext>
     );
-
 }
