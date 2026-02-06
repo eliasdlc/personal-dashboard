@@ -30,7 +30,11 @@ export function GamificationStats() {
         // Listen for task completion events if we implement a global event bus, 
         // or just poll/rely on parent re-renders. 
         // For now, simple fetch on mount.
-        const interval = setInterval(fetchStats, 10000); // Polling every 10s for updates
+        const interval = setInterval(() => {
+            if (document.visibilityState === 'visible') {
+                fetchStats();
+            }
+        }, 60000); // Polling every 60s for updates
         return () => clearInterval(interval);
     }, []);
 
