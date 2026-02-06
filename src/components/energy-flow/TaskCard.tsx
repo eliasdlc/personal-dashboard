@@ -1,6 +1,7 @@
 'use client';
 
 import { Task } from "@/components/dashboard/TaskWidget";
+import { use8BitSound } from "@/hooks/use8BitSound";
 import { EnergyBadge } from "./EnergyBadge";
 import { ContextTag } from "./ContextTag";
 import { SubtaskList } from "./SubtaskList";
@@ -57,9 +58,8 @@ function formatRelativeDate(date: Date): { text: string; colorClass: string } {
 
 export function TaskCard({ task, allTasks = [], onToggle, onDelete, onEdit, onToggleSubtask, onDeleteSubtask, onAddSubtask, className, showEnergy = true, showContext = true }: TaskCardProps) {
     const isDone = task.status === 'done';
+    const { playTaskComplete } = use8BitSound();
 
-    // Check if this task has subtasks
-    // Check if this task has subtasks
     const ownSubtasks = task.subtasks || [];
     // If no nested subtasks, OR if allTasks is provided (to catch optimistic updates), try to find them in allTasks
     const derivedSubtasks = allTasks
@@ -125,7 +125,9 @@ export function TaskCard({ task, allTasks = [], onToggle, onDelete, onEdit, onTo
                     transition={{ duration: 0.3 }}
                     onClick={(e) => {
                         e.stopPropagation();
-                        // No confetti
+                        if (!isDone) {
+                            playTaskComplete();
+                        }
                         handleToggle(task);
                     }}
                     onPointerDown={(e) => e.stopPropagation()}

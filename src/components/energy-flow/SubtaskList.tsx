@@ -1,10 +1,12 @@
 'use client';
 
 import { Task } from "@/components/dashboard/TaskWidget";
+import { use8BitSound } from "@/hooks/use8BitSound";
 import { Check, Plus, Trash2, X, GripVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
+import { Confetti } from "@/components/ui/confetti";
 import {
     DndContext,
     closestCenter,
@@ -116,6 +118,7 @@ export function SubtaskList({
     const [newSubtaskTitle, setNewSubtaskTitle] = useState('');
     const [isAdding, setIsAdding] = useState(false);
 
+    const [showConfetti, setShowConfetti] = useState(false);
     const sensors = useSensors(
         useSensor(PointerSensor, {
             activationConstraint: {
@@ -132,6 +135,19 @@ export function SubtaskList({
     const completedCount = subtasks.filter(t => t.status === 'done').length;
     const totalCount = subtasks.length;
     const progress = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
+
+    const { playSubtaskNote, playTaskComplete } = use8BitSound();
+
+    const handleToggleWrapper = (subtask: any) => {
+        if (subtask.status !== 'done') {
+            if (completedCount + 1 === subtasks.length) {
+                playTaskComplete();
+            } else {
+                playSubtaskNote(completedCount);
+            }
+        }
+        onToggleSubtask(subtask);
+    };
 
     async function handleAddSubtask() {
         if (!newSubtaskTitle.trim() || !onAddSubtask) return;
@@ -183,7 +199,7 @@ export function SubtaskList({
                             <SortableItem
                                 key={subtask.id}
                                 subtask={subtask}
-                                onToggleSubtask={onToggleSubtask}
+                                onToggleSubtask={handleToggleWrapper}
                                 onDeleteSubtask={onDeleteSubtask}
                                 canReorder={!!onReorder}
                             />
@@ -191,6 +207,8 @@ export function SubtaskList({
                     </SortableContext>
                 </DndContext>
             </div>
+
+            <Confetti active={showConfetti} />
 
             {/* Add Subtask Input */}
             {showAddInput && onAddSubtask && (

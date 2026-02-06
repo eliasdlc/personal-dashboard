@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { Task } from "@/components/dashboard/TaskWidget";
-import { useCompletionSound } from "@/hooks/use-completion-sound";
 import { PlanningView } from "./PlanningView";
 import { ExecutionView } from "./ExecutionView";
 import { Confetti } from "@/components/ui/confetti";
@@ -25,7 +24,6 @@ import { EditTaskMobileView } from "./EditTaskMobileView";
 import { EnergyFlowSkeleton } from "@/components/ui/skeletons";
 
 export function EnergyFlowModule() {
-    const { playCompletionSound } = useCompletionSound();
 
     const [mode, setMode] = useState<'planning' | 'execution' | 'archive'>('execution');
     const [tasks, setTasks] = useState<Task[]>([]);
@@ -262,9 +260,10 @@ export function EnergyFlowModule() {
         ));
 
         if (newStatus === 'done') {
-            setShowConfetti(true);
-            playCompletionSound();
-            setTimeout(() => setShowConfetti(false), 2500);
+            if (task.parentId === null) {
+                setShowConfetti(true);
+                setTimeout(() => setShowConfetti(false), 2000);
+            }
 
             // Check for auto-completion of parent task
             if (task.parentId) {
@@ -300,6 +299,10 @@ export function EnergyFlowModule() {
                     ? { ...t, status: 'done', completedAt: now }
                     : t
             ));
+
+            // Trigger confetti for the parent completion
+            setShowConfetti(true);
+            setTimeout(() => setShowConfetti(false), 2000);
 
             try {
                 await fetch(`/api/tasks`, {
